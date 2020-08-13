@@ -11,7 +11,7 @@ end
 
 DailyTrajectories(fname::AbstractString, ::Integer) = DailyTrajectories(JLD2.jldopen(fname, "w+", compress=true), 0)
 
-function pushtrajectory!(d::DailyTrajectories, state::Simulation.SimState, params::Simulation.SimParams, cb::DetectionCallback)
+function pushtrajectory!(d::DailyTrajectories, state::MocosSim.SimState, params::MocosSim.SimParams, cb::DetectionCallback)
   d.last_trajectory += 1
   trajectory_group = JLD2.Group(d.file, string(d.last_trajectory))
   save_daily_trajectories(trajectory_group, state, params, cb)
@@ -19,19 +19,19 @@ end
 
 aftertrajectories(d::DailyTrajectories) = close(d.file)
 
-function save_daily_trajectories(dict, state::Simulation.SimState, params::Simulation.SimParams, cb::DetectionCallback)
-  max_days = Simulation.time(state) |> floor |> Int
-  num_individuals = Simulation.numindividuals(state)
+function save_daily_trajectories(dict, state::MocosSim.SimState, params::MocosSim.SimParams, cb::DetectionCallback)
+  max_days = MocosSim.time(state) |> floor |> Int
+  num_individuals = MocosSim.numindividuals(state)
   
   infection_times = Vector{OptTimePoint}(missing, num_individuals)
-  contact_kinds = Vector{Simulation.ContactKind}(undef, num_individuals)
+  contact_kinds = Vector{MocosSim.ContactKind}(undef, num_individuals)
 
   for i in 1:num_individuals
-    event = Simulation.backwardinfection(state, i)
+    event = MocosSim.backwardinfection(state, i)
     kind = contactkind(event)
 
     contact_kinds[i] = kind
-    infection_times[i] = ifelse(kind == Simulation.NoContact, time(event), missing)
+    infection_times[i] = ifelse(kind == MocosSim.NoContact, time(event), missing)
   end
   hospitalization_progressions = getproperty.(params.progressions, :severe_symptoms_time)
   death_progressions = getproperty.(params.progressions, :death_time)

@@ -1,5 +1,5 @@
 using Random
-using Distributions
+#using Distributions
 
 function read_params(json, rng::AbstractRNG)
   constant_kernel_param = json["transmission_probabilities"]["constant"]  |> float
