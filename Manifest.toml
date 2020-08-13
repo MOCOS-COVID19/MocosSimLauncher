@@ -168,11 +168,11 @@ uuid = "a63ad114-7e13-5084-954f-fe012c677804"
 
 [[MocosSim]]
 deps = ["CSV", "DataFrames", "DataStructures", "Distributions", "FixedPointNumbers", "LinearAlgebra", "Random", "SaferIntegers", "Setfield", "StaticArrays"]
-git-tree-sha1 = "570e84223c48f6f59ea95dc46836f02a6d986ac4"
+git-tree-sha1 = "6050a2399df2b4e1371f93d26167b7923f3c8072"
 repo-rev = "master"
 repo-url = "git@github.com:MOCOS-COVID19/MocosSim.git"
 uuid = "af72bc66-7bc2-4ee8-90df-e21de508fcd7"
-version = "1.1.0"
+version = "1.1.2"
 
 [[OpenSpecFun_jll]]
 deps = ["CompilerSupportLibraries_jll", "Libdl", "Pkg"]
