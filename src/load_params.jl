@@ -37,7 +37,7 @@ function read_params(json, rng::AbstractRNG)
   spreading_x0 = isnothing(spreading) ? 1 : get(spreading, "x0", 1)
   spreading_truncation = isnothing(spreading) ? Inf : get(spreading, "truncation", Inf)
 
-  Simulation.load_params(
+  MocosSim.load_params(
     rng,
     population = individuals_df, 
         

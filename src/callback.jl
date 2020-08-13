@@ -34,25 +34,25 @@ function reset!(cb::DetectionCallback)
   fill!(cb.tracking_types, 0)
 end
 
-function (cb::DetectionCallback)(event::Simulation.Event, state::Simulation.SimState, params::Simulation.SimParams)
-  eventkind = Simulation.kind(event)
-  contactkind = Simulation.contactkind(event)
-  subject = Simulation.subject(event)
-  if Simulation.isdetection(eventkind)
-    cb.detection_times[subject] = Simulation.time(event)
-    cb.detection_types[subject] = Simulation.detectionkind(event) |> UInt8
-  elseif Simulation.istracking(eventkind)
-    cb.tracking_times[subject] = Simulation.time(event)
-    cb.tracking_sources[subject] = Simulation.source(event)
-    cb.tracking_types[subject] = Simulation.trackingkind(event) |> UInt8
+function (cb::DetectionCallback)(event::MocosSim.Event, state::MocosSim.SimState, params::MocosSim.SimParams)
+  eventkind = MocosSim.kind(event)
+  contactkind = MocosSim.contactkind(event)
+  subject = MocosSim.subject(event)
+  if MocosSim.isdetection(eventkind)
+    cb.detection_times[subject] = MocosSim.time(event)
+    cb.detection_types[subject] = MocosSim.detectionkind(event) |> UInt8
+  elseif MocosSim.istracking(eventkind)
+    cb.tracking_times[subject] = MocosSim.time(event)
+    cb.tracking_sources[subject] = MocosSim.source(event)
+    cb.tracking_types[subject] = MocosSim.trackingkind(event) |> UInt8
   end
-  return Simulation.numinfected(state.stats) < cb.max_num_infected
+  return MocosSim.numinfected(state.stats) < cb.max_num_infected
 end
 
-function save_infections_and_detections(path::AbstractString, simstate::Simulation.SimState, callback::DetectionCallback)
+function save_infections_and_detections(path::AbstractString, simstate::MocosSim.SimState, callback::DetectionCallback)
   f = jldopen(path, "w", compress=true)
   try
-    Simulation.saveparams(f, simstate)
+    MocosSim.saveparams(f, simstate)
     saveparams(f, callback)
   finally
     close(f)

@@ -1,4 +1,4 @@
-module Launcher
+module MocosSimLauncher
 
 using ArgParse
 using Base.Threads
@@ -9,10 +9,10 @@ using JSON
 using ProgressMeter
 using Random
 
-import Simulation
-import Simulation: ContactKind, NoContact, contactkind, time
+import MocosSim
+import MocosSim: ContactKind, NoContact, contactkind, time
 
-const OptTimePoint = Union{Missing, Simulation.TimePoint}
+const OptTimePoint = Union{Missing, MocosSim.TimePoint}
 optreal2float32(optreal::Union{Missing,T} where T<:Real) = ismissing(optreal) ? NaN32 : Float32(optreal)
 
 include("cmd_parsing.jl")
@@ -40,9 +40,9 @@ function launch()
   @info "loading population and setting up parameters" params_seed
   rng = MersenneTwister(params_seed)
   params = read_params(json, rng) 
-  num_individuals =  Simulation.numindividuals(params)
+  num_individuals =  MocosSim.numindividuals(params)
   
-  states = [Simulation.SimState(num_individuals) for _ in 1:nthreads()]
+  states = [MocosSim.SimState(num_individuals) for _ in 1:nthreads()]
   callbacks = [DetectionCallback(num_individuals, max_num_infected) for _ in 1:nthreads()]
 
   outputs = make_outputs(cmd_args, num_trajectories)
@@ -54,13 +54,13 @@ function launch()
   GC.gc()
   @threads for trajectory_id in 1:num_trajectories
     state = states[threadid()]
-    Simulation.reset!(state, trajectory_id)
-    Simulation.initialfeed!(state, num_initial_infected)
+    MocosSim.reset!(state, trajectory_id)
+    MocosSim.initialfeed!(state, num_initial_infected)
 
     callback = callbacks[threadid()]
     reset!(callback)
     try
-      Simulation.simulate!(state, params, callback)
+      MocosSim.simulate!(state, params, callback)
       try
         lock(writelock) # JLD2 is not thread-safe, not even when files are separate
         foreach(o->pushtrajectory!(o, state, params, callback), outputs)

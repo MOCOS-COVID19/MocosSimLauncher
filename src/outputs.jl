@@ -1,8 +1,8 @@
 abstract type Output end
 
-beforetrajectories(::Output, ::Simulation.SimParams) = nothing
-pushtrajectory!(::Output, ::Simulation.SimState, ::Simulation.SimParams, ::DetectionCallback) = nothing
-aftertrajectories(::Output, ::Simulation.SimParams) = nothing
+beforetrajectories(::Output, ::MocosSim.SimParams) = nothing
+pushtrajectory!(::Output, ::MocosSim.SimState, ::MocosSim.SimParams, ::DetectionCallback) = nothing
+aftertrajectories(::Output, ::MocosSim.SimParams) = nothing
 
 include("outputs/daily_trajectories.jl")
 include("outputs/params_dump.jl")
