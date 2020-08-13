@@ -170,7 +170,7 @@ uuid = "a63ad114-7e13-5084-954f-fe012c677804"
 deps = ["CSV", "DataFrames", "DataStructures", "Distributions", "FixedPointNumbers", "LinearAlgebra", "Random", "SaferIntegers", "Setfield", "StaticArrays"]
 git-tree-sha1 = "6050a2399df2b4e1371f93d26167b7923f3c8072"
 repo-rev = "master"
-repo-url = "git@github.com:MOCOS-COVID19/MocosSim.git"
+repo-url = "https://github.com/MOCOS-COVID19/MocosSim.git"
 uuid = "af72bc66-7bc2-4ee8-90df-e21de508fcd7"
 version = "1.1.2"
 
