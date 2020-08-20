@@ -25,7 +25,7 @@ export launch
 function launch()
   @info "Stated" nthreads()
   if nthreads() == 1
-    @warn "using single thread, set more threads by setting JULIA_NUM_THREADS environment variable"
+    @warn "using single thread, set more threads by passing --threads agrument to julia or setting JULIA_NUM_THREADS environment variable"
   end
 
   cmd_args = parse_commandline()
