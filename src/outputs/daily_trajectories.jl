@@ -4,17 +4,22 @@ using JLD2
 daily(times::AbstractArray{T} where T, max_days::Integer) = fit(Histogram, times, 0:(max_days) ).weights
 daily(times::AbstractVector{T} where T) = daily(times, maximum(times))
 
-mutable struct DailyTrajectories <: Output
+struct DailyTrajectories <: Output
   file::JLD2.JLDFile
-  last_trajectory::Int
 end
 
-DailyTrajectories(fname::AbstractString, ::Integer) = DailyTrajectories(JLD2.jldopen(fname, "w+", compress=true), 0)
+DailyTrajectories(fname::AbstractString) = DailyTrajectories(JLD2.jldopen(fname, "w+", compress=true))
+DailyTrajectories(fname::AbstractString, ::Integer) = DailyTrajectories(fname)
 
-function pushtrajectory!(d::DailyTrajectories, state::MocosSim.SimState, params::MocosSim.SimParams, cb::DetectionCallback)
-  d.last_trajectory += 1
-  trajectory_group = JLD2.Group(d.file, string(d.last_trajectory))
-  save_daily_trajectories(trajectory_group, state, params, cb)
+function pushtrajectory!(d::DailyTrajectories, trajectory_id::Integer, writelock::Base.AbstractLock, state::MocosSim.SimState, params::MocosSim.SimParams, cb::DetectionCallback)
+  try 
+    lock(writelock)
+    trajectory_group = JLD2.Group(d.file, string(trajectory_id))
+    save_daily_trajectories(trajectory_group, state, params, cb)
+  finally
+    unlock(writelock)
+  end
+  nothing
 end
 
 aftertrajectories(d::DailyTrajectories) = close(d.file)
@@ -29,10 +34,10 @@ function save_daily_trajectories(dict, state::MocosSim.SimState, params::MocosSi
   for i in 1:num_individuals
     event = MocosSim.backwardinfection(state, i)
     kind = contactkind(event)
-
     contact_kinds[i] = kind
     infection_times[i] = ifelse(kind == MocosSim.NoContact, time(event), missing)
   end
+
   hospitalization_progressions = getproperty.(params.progressions, :severe_symptoms_time)
   death_progressions = getproperty.(params.progressions, :death_time)
 

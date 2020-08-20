@@ -61,13 +61,7 @@ function launch()
     reset!(callback)
     try
       MocosSim.simulate!(state, params, callback)
-      try
-        lock(writelock) # JLD2 is not thread-safe, not even when files are separate
-        foreach(o->pushtrajectory!(o, state, params, callback), outputs)
-      finally
-        GC.gc()
-        unlock(writelock)
-      end
+      foreach(o->pushtrajectory!(o, trajectory_id, writelock, state, params, callback), outputs)
     catch err
       println(stderr, "Failed on thread ", threadid(), " iteration ", trajectory_id, " failed: ", err)
       foreach(x -> println(stderr, x), stacktrace(catch_backtrace()))

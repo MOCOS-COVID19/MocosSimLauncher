@@ -11,4 +11,5 @@ function beforetrajectories(d::ParamsDump, params::MocosSim.SimParams)
   finally
     close(file)
   end
+  nothing
 end
