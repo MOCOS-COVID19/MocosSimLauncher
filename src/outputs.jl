@@ -1,7 +1,7 @@
 abstract type Output end
 
 beforetrajectories(::Output, ::MocosSim.SimParams) = nothing
-pushtrajectory!(::Output, ::MocosSim.SimState, ::MocosSim.SimParams, ::DetectionCallback) = nothing
+pushtrajectory!(::Output, ::Integer, ::Base.AbstractLock, ::MocosSim.SimState, ::MocosSim.SimParams, ::DetectionCallback) = nothing
 aftertrajectories(::Output, ::MocosSim.SimParams) = nothing
 
 include("outputs/daily_trajectories.jl")
@@ -18,9 +18,9 @@ const cmd_to_output = Dict{String,Type}(
 
 function make_outputs(cmd_args::Dict{String,Any}, num_trajectories::Integer)
   outputs = Output[]
-  for (opt, type) in cmd_to_output
+  for (opt, output_type) in cmd_to_output
     if cmd_args[opt] |> !isnothing
-      push!(outputs, type(cmd_args[opt], num_trajectories))
+      push!(outputs, output_type(cmd_args[opt], num_trajectories))
     end
   end
   outputs

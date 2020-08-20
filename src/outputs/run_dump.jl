@@ -1,17 +1,21 @@
-mutable struct RunDump <: Output
+struct RunDump <: Output
   path_prefix::String
-  num_trajectories::Int
-  RunDump(path_prefix::AbstractString, ::Integer) = new(path_prefix, 0)
+  RunDump(path_prefix::AbstractString) = new(path_prefix)
 end
+RunDump(path_prefix::AbstractString, ::Integer) = RunDump(path_prefix)
 
-function pushtrajectory!(d::RunDump, state::MocosSim.SimState, ::MocosSim.SimParams, callback::DetectionCallback)
-  d.num_trajectories += 1
-  f = jldopen(d.path_prefix*"_$(d.num_trajectories).jld2", "w", compress=true)
-  try
-    MocosSim.saveparams(f, state)
-    saveparams(f, callback)
+
+function pushtrajectory!(d::RunDump, trajectory_id::Integer, writelock::Base.AbstractLock, state::MocosSim.SimState, ::MocosSim.SimParams, callback::DetectionCallback)
+  try lock(writelock)
+    f = jldopen(d.path_prefix*"_$trajectory_id.jld2", "w", compress=true)
+    try
+      MocosSim.saveparams(f, state)
+      saveparams(f, callback)
+    finally
+      close(f)
+    end
   finally
-    close(f)
+    unlock(writelock)
   end
   nothing
 end
