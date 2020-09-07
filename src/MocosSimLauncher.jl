@@ -1,3 +1,5 @@
+push!(LOAD_PATH, "../MocosSim")
+
 module MocosSimLauncher
 
 using ArgParse

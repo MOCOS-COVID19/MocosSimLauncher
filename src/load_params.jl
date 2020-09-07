@@ -9,15 +9,15 @@ function read_params(json, rng::AbstractRNG)
 
   mild_detection_prob = json["detection_mild_proba"]  |> float
 
-  tracking_prob = json["contact_tracking"]["probability"]  |> float
-  tracking_backward_delay = json["contact_tracking"]["backward_detection_delay"]  |> float
-  tracking_forward_delay = json["contact_tracking"]["forward_detection_delay"]  |> float
+  tracing_prob = json["contact_tracking"]["probability"]  |> float
+  tracing_backward_delay = json["contact_tracking"]["backward_detection_delay"]  |> float
+  tracing_forward_delay = json["contact_tracking"]["forward_detection_delay"]  |> float
   testing_time = json["contact_tracking"]["testing_time"]  |> float
 
-  phone_tracking = get(json, "phone_tracking", nothing)
-  phone_tracking_usage = isnothing(phone_tracking) ? 0.0 : phone_tracking["usage"] |> float
-  phone_tracking_testing_delay = isnothing(phone_tracking) ? 1.0 : phone_tracking["detection_delay"] |> float
-  phone_tracking_usage_by_household = isnothing(phone_tracking) ? false : phone_tracking["usage_by_household"] |> Bool 
+  phone_tracing = get(json, "phone_tracking", nothing)
+  phone_tracing_usage = isnothing(phone_tracing) ? 0.0 : phone_tracing["usage"] |> float
+  phone_tracing_testing_delay = isnothing(phone_tracing) ? 1.0 : phone_tracing["detection_delay"] |> float
+  phone_tracing_usage_by_household = isnothing(phone_tracing) ? false : phone_tracing["usage_by_household"] |> Bool 
 
   population_path = json["population_path"] # <= JSON
   population_path::AbstractString # checks if it was indeed a string
@@ -48,17 +48,17 @@ function read_params(json, rng::AbstractRNG)
     hospital_kernel_param = hospital_kernel_param,
     friendship_kernel_param = friendship_kernel_param,
         
-    backward_tracking_prob = tracking_prob,
-    backward_detection_delay = tracking_backward_delay,
+    backward_tracing_prob = tracing_prob,
+    backward_detection_delay = tracing_backward_delay,
         
-    forward_tracking_prob = tracking_prob,
-    forward_detection_delay = tracking_forward_delay,
+    forward_tracing_prob = tracing_prob,
+    forward_detection_delay = tracing_forward_delay,
         
     testing_time = testing_time,
 
-    phone_tracking_usage = phone_tracking_usage,
-    phone_detection_delay = phone_tracking_testing_delay,
-    phone_tracking_usage_by_household = phone_tracking_usage_by_household,
+    phone_tracing_usage = phone_tracing_usage,
+    phone_detection_delay = phone_tracing_testing_delay,
+    phone_tracing_usage_by_household = phone_tracing_usage_by_household,
 
     infection_modulation_name=infection_modulation_name,
     infection_modulation_params=infection_modulation_params,

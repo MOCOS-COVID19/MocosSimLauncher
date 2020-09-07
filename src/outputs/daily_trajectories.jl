@@ -1,7 +1,7 @@
 using StatsBase
 using JLD2
 
-daily(times::AbstractArray{T} where T, max_days::Integer) = fit(Histogram, times, 0:(max_days) ).weights
+daily(times::AbstractVector{T} where T, max_days::Integer) = fit(Histogram, times, 0:(max_days) ).weights
 daily(times::AbstractVector{T} where T) = daily(times, maximum(times))
 
 struct DailyTrajectories <: Output
@@ -35,14 +35,14 @@ function save_daily_trajectories(dict, state::MocosSim.SimState, params::MocosSi
     event = MocosSim.backwardinfection(state, i)
     kind = contactkind(event)
     contact_kinds[i] = kind
-    infection_times[i] = ifelse(kind == MocosSim.NoContact, time(event), missing)
+    infection_times[i] = ifelse(kind == MocosSim.NoContact, missing, time(event))
   end
 
   hospitalization_progressions = getproperty.(params.progressions, :severe_symptoms_time)
   death_progressions = getproperty.(params.progressions, :death_time)
 
-  dict["infection_times"] = daily(filter(!ismissing,infection_times), max_days)
-  dict["detection_tiems"] = daily(filter(!ismissing, cb.detection_times), max_days)
+  dict["daily_infections"] = daily(filter(!ismissing, infection_times), max_days)
+  dict["daily_detections"] = daily(filter(!ismissing, cb.detection_times), max_days)
   dict["daily_deaths"] = daily(filter(!ismissing, infection_times.+death_progressions), max_days)
   dict["daily_hospitalizations"] = daily(filter(!ismissing, infection_times.+hospitalization_progressions), max_days)
   for kind in instances(ContactKind)
