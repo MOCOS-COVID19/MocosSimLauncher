@@ -41,9 +41,9 @@ function launch()
 
   @info "loading population and setting up parameters" params_seed
   rng = MersenneTwister(params_seed)
-  params = read_params(json, rng) 
+  params = read_params(json, rng)
   num_individuals =  MocosSim.numindividuals(params)
-  
+
   states = [MocosSim.SimState(num_individuals) for _ in 1:nthreads()]
   callbacks = [DetectionCallback(num_individuals, max_num_infected) for _ in 1:nthreads()]
 
@@ -68,7 +68,7 @@ function launch()
       println(stderr, "Failed on thread ", threadid(), " iteration ", trajectory_id, " failed: ", err)
       foreach(x -> println(stderr, x), stacktrace(catch_backtrace()))
     end
-    
+
     ProgressMeter.next!(progress) # is thread-safe
   end
   foreach(o->aftertrajectories(o, params), outputs)
