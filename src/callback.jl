@@ -6,7 +6,7 @@ struct DetectionCallback
     tracing_times::Vector{OptTimePoint}
     tracing_sources::Vector{UInt32}
     tracing_types::Vector{UInt8}
-    
+
     max_num_infected::UInt32
 end
 
@@ -41,7 +41,7 @@ function (cb::DetectionCallback)(event::MocosSim.Event, state::MocosSim.SimState
   return MocosSim.numinfected(state.stats) < cb.max_num_infected
 end
 
-function saveparams(dict, cb::DetectionCallback, prefix::AbstractString="") 
+function saveparams(dict, cb::DetectionCallback, prefix::AbstractString="")
   dict[prefix*"detection_times"] = optreal2float32.(cb.detection_times)
   dict[prefix*"detection_types"] = cb.detection_types
 

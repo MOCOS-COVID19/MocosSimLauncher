@@ -6,7 +6,7 @@ struct Summary <: Output
 end
 
 function pushtrajectory!(s::Summary, trajectory_id::Integer, writelock::Base.AbstractLock, state::MocosSim.SimState, ::MocosSim.SimParams, ::DetectionCallback)
-  try 
+  try
     lock(writelock)
     s.last_infections[trajectory_id] = maximum(MocosSim.time, state.forest.inedges)
     s.num_infections[trajectory_id] = count(MocosSim.istransmission, state.forest.inedges)
@@ -18,7 +18,7 @@ end
 
 function aftertrajectories(s::Summary, ::MocosSim.SimParams)
   file = jldopen(s.filename, "w")
-  try 
+  try
     file["num_infections"] = s.num_infections
     file["last_infections"] = s.last_infections
   finally

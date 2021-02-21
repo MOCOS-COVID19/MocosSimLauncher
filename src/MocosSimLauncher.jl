@@ -24,13 +24,13 @@ include("outputs.jl")
 
 export launch
 
-function launch()
+function launch(args::AbstractVector{T} where T<:AbstractString)
   @info "Stated" nthreads()
   if nthreads() == 1
     @warn "using single thread, set more threads by passing --threads agrument to julia or setting JULIA_NUM_THREADS environment variable"
   end
 
-  cmd_args = parse_commandline()
+  cmd_args = parse_commandline(args)
   @info "Parsed args" cmd_args
   json = JSON.parsefile(cmd_args["JSON"])
 
@@ -63,15 +63,27 @@ function launch()
     reset!(callback)
     try
       MocosSim.simulate!(state, params, callback)
-      foreach(o->pushtrajectory!(o, trajectory_id, writelock, state, params, callback), outputs)
+      for o in outputs
+        o->pushtrajectory!(o, trajectory_id, writelock, state, params, callback)
+      end
     catch err
-      println(stderr, "Failed on thread ", threadid(), " iteration ", trajectory_id, " failed: ", err)
+      @warn "Failed on thread " threadid() trajectory_id err
       foreach(x -> println(stderr, x), stacktrace(catch_backtrace()))
     end
 
     ProgressMeter.next!(progress) # is thread-safe
   end
   foreach(o->aftertrajectories(o, params), outputs)
+end
+
+function julia_main()::Cint
+  try
+    launch(ARGS)
+  catch err
+    Base.invokelatest(Base.display_error, Base.catch_stack())
+    return 1
+  end
+  return 0
 end
 
 end

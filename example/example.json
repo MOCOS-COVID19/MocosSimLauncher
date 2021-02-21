@@ -12,7 +12,8 @@
     "household": 0.3,
     "constant": 1.35,
     "hospital": 0.0,
-    "friendship": 0.0
+    "friendship": 0.0,
+    "british_strain_multiplier": 1.7
   },
   "modulation":{
     "function" : "TanhModulation",

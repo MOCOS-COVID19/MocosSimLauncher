@@ -1,4 +1,4 @@
 println("Launching")
 using MocosSimLauncher
 
-launch()
+launch(ARGS)

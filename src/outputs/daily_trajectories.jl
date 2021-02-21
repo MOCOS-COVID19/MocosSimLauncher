@@ -12,7 +12,7 @@ DailyTrajectories(fname::AbstractString) = DailyTrajectories(JLD2.jldopen(fname,
 DailyTrajectories(fname::AbstractString, ::Integer) = DailyTrajectories(fname)
 
 function pushtrajectory!(d::DailyTrajectories, trajectory_id::Integer, writelock::Base.AbstractLock, state::MocosSim.SimState, params::MocosSim.SimParams, cb::DetectionCallback)
-  try 
+  try
     lock(writelock)
     trajectory_group = JLD2.Group(d.file, string(trajectory_id))
     save_daily_trajectories(trajectory_group, state, params, cb)
@@ -27,7 +27,7 @@ aftertrajectories(d::DailyTrajectories) = close(d.file)
 function save_daily_trajectories(dict, state::MocosSim.SimState, params::MocosSim.SimParams, cb::DetectionCallback)
   max_days = MocosSim.time(state) |> floor |> Int
   num_individuals = MocosSim.numindividuals(state)
-  
+
   infection_times = Vector{OptTimePoint}(missing, num_individuals)
   contact_kinds = Vector{MocosSim.ContactKind}(undef, num_individuals)
 

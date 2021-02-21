@@ -6,6 +6,7 @@ function read_params(json, rng::AbstractRNG)
   household_kernel_param = json["transmission_probabilities"]["household"] |> float
   hospital_kernel_param = get(json["transmission_probabilities"], "hospital", 0.0) |> float
   friendship_kernel_param = get(json["transmission_probabilities"], "friendship", 0.0) |> float
+  british_strain_multiplier = get(json["transmission_probabilities"], "british_strain_multiplier", 1.7) |> float
 
   mild_detection_prob = json["detection_mild_proba"]  |> float
 
@@ -17,7 +18,7 @@ function read_params(json, rng::AbstractRNG)
   phone_tracing = get(json, "phone_tracking", nothing)
   phone_tracing_usage = isnothing(phone_tracing) ? 0.0 : phone_tracing["usage"] |> float
   phone_tracing_testing_delay = isnothing(phone_tracing) ? 1.0 : phone_tracing["detection_delay"] |> float
-  phone_tracing_usage_by_household = isnothing(phone_tracing) ? false : phone_tracing["usage_by_household"] |> Bool 
+  phone_tracing_usage_by_household = isnothing(phone_tracing) ? false : phone_tracing["usage_by_household"] |> Bool
 
   population_path = json["population_path"] # <= JSON
   population_path::AbstractString # checks if it was indeed a string
@@ -39,21 +40,21 @@ function read_params(json, rng::AbstractRNG)
 
   MocosSim.load_params(
     rng,
-    population = individuals_df, 
-        
+    population = individuals_df,
+
     mild_detection_prob = mild_detection_prob,
-        
+
     constant_kernel_param = constant_kernel_param,
     household_kernel_param = household_kernel_param,
     hospital_kernel_param = hospital_kernel_param,
     friendship_kernel_param = friendship_kernel_param,
-        
+
     backward_tracing_prob = tracing_prob,
     backward_detection_delay = tracing_backward_delay,
-        
+
     forward_tracing_prob = tracing_prob,
     forward_detection_delay = tracing_forward_delay,
-        
+
     testing_time = testing_time,
 
     phone_tracing_usage = phone_tracing_usage,

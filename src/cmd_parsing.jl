@@ -1,7 +1,7 @@
 
 using ArgParse
 
-function parse_commandline()
+function parse_commandline(args::AbstractVector{T} where T<:AbstractString)
 	s = ArgParseSettings()
 	@add_arg_table! s begin
 		"JSON"
@@ -21,5 +21,5 @@ function parse_commandline()
       help = "path where summary should be saved"
       arg_type = String
 	end
-  parse_args(ARGS, s)
+  parse_args(args, s)
 end
