@@ -5,7 +5,8 @@ using PackageCompiler
 create_app(
   ".",
   joinpath(@__DIR__, "..", "build"),
-  precompile_execution_file=joinpath(@__DIR__, "run_example.jl"),
+  #precompile_execution_file=joinpath(@__DIR__, "run_example.jl"),
+  filter_stdlibs=true,
   audit=true,
   force=true,
   )
