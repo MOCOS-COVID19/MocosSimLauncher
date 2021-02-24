@@ -44,7 +44,7 @@ function load_simulation(args::AbstractVector{T} where T<:AbstractString)
   callbacks = [DetectionCallback(num_individuals, max_num_infected) for _ in 1:nthreads()]
   outputs = make_outputs(cmd_args, num_trajectories)
 
-  return params, states, callbacks, outputs
+  return params, states, callbacks, outputs, num_trajectories
 end
 
 function launch(args::AbstractVector{T} where T<:AbstractString)
@@ -53,8 +53,7 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
     @warn "using single thread, set more threads by passing --threads agrument to julia or setting JULIA_NUM_THREADS environment variable"
   end
 
-
-  params, states, callbacks, outputs = load_simulation(args)
+  params, states, callbacks, outputs, num_trajectories = load_simulation(args)
 
   for o in outputs
     beforetrajectories(o, params)
