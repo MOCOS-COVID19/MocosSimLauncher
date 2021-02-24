@@ -24,11 +24,7 @@ include("outputs.jl")
 
 export launch
 
-function launch(args::AbstractVector{T} where T<:AbstractString)
-  @info "Stated" nthreads()
-  if nthreads() == 1
-    @warn "using single thread, set more threads by passing --threads agrument to julia or setting JULIA_NUM_THREADS environment variable"
-  end
+function load_simulation(args::AbstractVector{T} where T<:AbstractString)
 
   cmd_args = parse_commandline(args)
   @info "Parsed args" cmd_args
@@ -46,9 +42,23 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
 
   states = [MocosSim.SimState(num_individuals) for _ in 1:nthreads()]
   callbacks = [DetectionCallback(num_individuals, max_num_infected) for _ in 1:nthreads()]
-
   outputs = make_outputs(cmd_args, num_trajectories)
-  foreach(o->beforetrajectories(o, params), outputs)
+
+  return params, states, callbacks, outputs
+end
+
+function launch(args::AbstractVector{T} where T<:AbstractString)
+  @info "Stated" nthreads()
+  if nthreads() == 1
+    @warn "using single thread, set more threads by passing --threads agrument to julia or setting JULIA_NUM_THREADS environment variable"
+  end
+
+
+  params, states, callbacks, outputs = load_simulation(args)
+
+  for o in outputs
+    beforetrajectories(o, params)
+  end
 
   @info "starting simulation" num_trajectories
   writelock = ReentrantLock()
@@ -64,7 +74,7 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
     try
       MocosSim.simulate!(state, params, callback)
       for o in outputs
-        o->pushtrajectory!(o, trajectory_id, writelock, state, params, callback)
+        pushtrajectory!(o, trajectory_id, writelock, state, params, callback)
       end
     catch err
       @warn "Failed on thread " threadid() trajectory_id err
@@ -73,7 +83,10 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
 
     ProgressMeter.next!(progress) # is thread-safe
   end
-  foreach(o->aftertrajectories(o, params), outputs)
+
+  for o in outputs
+    aftertrajectories(o, params)
+  end
 end
 
 function julia_main()::Cint
