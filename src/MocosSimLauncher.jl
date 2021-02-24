@@ -24,7 +24,11 @@ include("outputs.jl")
 
 export launch
 
-function load_simulation(args::AbstractVector{T} where T<:AbstractString)
+function launch(args::AbstractVector{T} where T<:AbstractString)
+  @info "Stated" nthreads()
+  if nthreads() == 1
+    @warn "using single thread, set more threads by passing --threads agrument to julia or setting JULIA_NUM_THREADS environment variable"
+  end
 
   cmd_args = parse_commandline(args)
   @info "Parsed args" cmd_args
@@ -43,17 +47,6 @@ function load_simulation(args::AbstractVector{T} where T<:AbstractString)
   states = [MocosSim.SimState(num_individuals) for _ in 1:nthreads()]
   callbacks = [DetectionCallback(num_individuals, max_num_infected) for _ in 1:nthreads()]
   outputs = make_outputs(cmd_args, num_trajectories)
-
-  return params, states, callbacks, outputs, num_trajectories
-end
-
-function launch(args::AbstractVector{T} where T<:AbstractString)
-  @info "Stated" nthreads()
-  if nthreads() == 1
-    @warn "using single thread, set more threads by passing --threads agrument to julia or setting JULIA_NUM_THREADS environment variable"
-  end
-
-  params, states, callbacks, outputs, num_trajectories = load_simulation(args)
 
   for o in outputs
     beforetrajectories(o, params)
