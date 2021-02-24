@@ -42,6 +42,8 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
   @info "loading population and setting up parameters" params_seed
   rng = MersenneTwister(params_seed)
   params = read_params(json, rng)
+  GC.gc()
+
   num_individuals =  MocosSim.numindividuals(params)
 
   states = [MocosSim.SimState(num_individuals) for _ in 1:nthreads()]
