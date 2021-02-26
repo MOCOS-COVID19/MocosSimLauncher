@@ -41,11 +41,13 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
 
   @info "loading population and setting up parameters" params_seed
   rng = MersenneTwister(params_seed)
+  GC.gc()
   params = read_params(json, rng)
   GC.gc()
 
   num_individuals =  MocosSim.numindividuals(params)
 
+  @info "allocating simulation states"
   states = [MocosSim.SimState(num_individuals) for _ in 1:nthreads()]
   callbacks = [DetectionCallback(num_individuals, max_num_infected) for _ in 1:nthreads()]
   outputs = make_outputs(cmd_args, num_trajectories)
