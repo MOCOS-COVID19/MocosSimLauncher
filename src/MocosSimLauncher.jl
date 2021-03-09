@@ -60,22 +60,24 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
   writelock = ReentrantLock()
   progress = ProgressMeter.Progress(num_trajectories)
   GC.gc()
-  @threads for trajectory_id in 1:num_trajectories
+
+  #@threads 
+  for trajectory_id in 1:num_trajectories
     state = states[threadid()]
     MocosSim.reset!(state, trajectory_id)
     MocosSim.initialfeed!(state, num_initial_infected)
 
     callback = callbacks[threadid()]
     reset!(callback)
-    try
+    #try
       MocosSim.simulate!(state, params, callback)
       for o in outputs
         pushtrajectory!(o, trajectory_id, writelock, state, params, callback)
       end
-    catch err
-      @warn "Failed on thread " threadid() trajectory_id err
-      foreach(x -> println(stderr, x), stacktrace(catch_backtrace()))
-    end
+    #catch err
+    #  @warn "Failed on thread " threadid() trajectory_id err
+    #  foreach(x -> println(stderr, x), stacktrace(catch_backtrace()))
+    #end
 
     ProgressMeter.next!(progress) # is thread-safe
   end

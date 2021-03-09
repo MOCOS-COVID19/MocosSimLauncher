@@ -1,8 +1,25 @@
 using StatsBase
 using JLD2
 
-daily(times::AbstractVector{T} where T, max_days::Integer) = fit(Histogram, times, 0:(max_days) ).weights
-daily(times::AbstractVector{T} where T) = daily(times, maximum(times))
+function daily!(f, counts::AbstractVector{T} where T<:Integer, arr)
+  fill!(counts, 0)
+  max_day = length(counts)
+  for a in arr
+    t = f(a)
+    if ismissing(t) || !isfinite(t)
+      continue
+    end
+    day = floor(Int, t) + 1
+    if day <= max_day
+      counts[day] += 1
+    end
+  end
+  counts
+end
+
+daily!(counts, arr) = daily!(identity, counts, arr)
+daily(f::Function, times) = daily!(f, fill(0, ceil(Int, maximum(f, times))), times)
+daily(times, max_time=ceil(Int, maximum(times))) = daily!(fill(0, max_time), times)
 
 struct DailyTrajectories <: Output
   file::JLD2.JLDFile
