@@ -69,3 +69,20 @@ function read_params(json, rng::AbstractRNG)
     spreading_truncation=spreading_truncation
   )
 end
+
+function load_states(num_individuals::Integer; precomputed_state_path::Union{Nothing, AbstractString}=nothing, num_states::Int=nthreads())
+  if precomputed_state_path === nothing
+    return [MocosSim.SimState(num_individuals) for _ in 1:num_states]
+  end
+  state = load(precomputed_state_path, "state")
+  state::MocosSim.SimState
+
+  @assert MocosSim.numindividuals(state) == num_individuals
+
+  states = MocosSim.SimState[state]
+  sizehint!(states, num_states)
+  for _ in 2:num_states
+    push!(states, deepcopy(state))
+  end
+  states
+end

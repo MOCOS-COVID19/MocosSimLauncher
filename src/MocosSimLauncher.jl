@@ -39,6 +39,9 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
   num_initial_infected = json["initial_conditions"]["cardinalities"]["infectious"] |> Int
   params_seed = get(json, "params_seed", 0)
 
+  immunization_path = get(json, "immunization_data", nothing)
+  immunization = ismissing( immunization_path ) ? nothing : load(immunization_path, "immune")
+
   @info "loading population and setting up parameters" params_seed
   rng = MersenneTwister(params_seed)
   GC.gc()
@@ -61,11 +64,21 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
   progress = ProgressMeter.Progress(num_trajectories)
   GC.gc()
 
-  #@threads 
+  #@threads
   for trajectory_id in 1:num_trajectories
     state = states[threadid()]
     MocosSim.reset!(state, trajectory_id)
     MocosSim.initialfeed!(state, num_initial_infected)
+
+    if immunization !== nothing
+      for i in 1:num_individuals
+        if !immunization[i]
+          continue
+        end
+        individual = state.individuals[i]
+        state.individuals[i] = @set individual.health = MocosSim.Recovered
+      end
+    end
 
     callback = callbacks[threadid()]
     reset!(callback)

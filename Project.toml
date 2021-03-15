@@ -1,7 +1,7 @@
 name = "MocosSimLauncher"
 uuid = "6c49bac2-0074-4c73-9d8e-08bba4c1058c"
 authors = ["Tomasz Ożański <tomasz.ozanski@pwr.edu.pl>"]
-version = "0.3.2"
+version = "0.3.3"
 
 [deps]
 ArgParse = "c7e460c6-2fb9-53a9-8c5b-16f535851c63"
@@ -17,4 +17,4 @@ Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 
 [compat]
-MocosSim = "=0.3.2"
+MocosSim = "=0.3.3"
