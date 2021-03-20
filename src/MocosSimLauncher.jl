@@ -10,6 +10,7 @@ using JLD2
 using JSON
 using ProgressMeter
 using Random
+using Setfield
 
 import MocosSim
 import MocosSim: ContactKind, NoContact, contactkind, time
@@ -39,8 +40,14 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
   num_initial_infected = json["initial_conditions"]["cardinalities"]["infectious"] |> Int
   params_seed = get(json, "params_seed", 0)
 
-  immunization_path = get(json, "immunization_data", nothing)
-  immunization = ismissing( immunization_path ) ? nothing : load(immunization_path, "immune")
+  immune = if haskey(json, "immunization")
+    immunization = json["immunization"]
+    immunization_order::AbstractVector{T} where T<: Integer = load(immunization["order_data"], "order")
+    immunization_level::Real = immunization["level"]
+    immunization_order .<= immunization_level / length(immunization_order)
+  else
+    nothing
+  end
 
   @info "loading population and setting up parameters" params_seed
   rng = MersenneTwister(params_seed)
@@ -70,9 +77,9 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
     MocosSim.reset!(state, trajectory_id)
     MocosSim.initialfeed!(state, num_initial_infected)
 
-    if immunization !== nothing
+    if immune !== nothing
       for i in 1:num_individuals
-        if !immunization[i]
+        if !immune[i]
           continue
         end
         individual = state.individuals[i]
