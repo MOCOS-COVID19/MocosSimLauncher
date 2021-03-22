@@ -19,6 +19,11 @@ function read_params(json, rng::AbstractRNG)
   phone_tracing_usage = isnothing(phone_tracing) ? 0.0 : phone_tracing["usage"] |> float
   phone_tracing_testing_delay = isnothing(phone_tracing) ? 1.0 : phone_tracing["detection_delay"] |> float
   phone_tracing_usage_by_household = isnothing(phone_tracing) ? false : phone_tracing["usage_by_household"] |> Bool
+  
+  age_multipliers=[1.0]
+  for i in 1:120
+    push!(age_multipliers,get(json["age_multipliers"],string(i),1.0))
+  end
 
   population_path = json["population_path"] # <= JSON
   population_path::AbstractString # checks if it was indeed a string
@@ -56,6 +61,8 @@ function read_params(json, rng::AbstractRNG)
     forward_detection_delay = tracing_forward_delay,
 
     testing_time = testing_time,
+    
+    age_multipliers=age_multipliers,
 
     phone_tracing_usage = phone_tracing_usage,
     phone_detection_delay = phone_tracing_testing_delay,
