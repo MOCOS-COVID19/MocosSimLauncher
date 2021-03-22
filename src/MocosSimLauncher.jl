@@ -37,11 +37,12 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
 
   max_num_infected = json["stop_simulation_threshold"] |> Int
   num_trajectories = json["num_trajectories"] |> Int
-  num_initial_infected = json["initial_conditions"]["cardinalities"]["infectious"] |> Int
+  initial_conditions = json["initial_conditions"]
+  num_initial_infected = initial_conditions["cardinalities"]["infectious"] |> Int
   params_seed = get(json, "params_seed", 0)
 
-  immune = if haskey(json, "immunization")
-    immunization = json["immunization"]
+  immune = if haskey(initial_conditions, "immunization")
+    immunization = initial_conditions["immunization"]
     immunization_order::AbstractVector{T} where T<: Integer = load(immunization["order_data"], "order")
     immunization_level::Real = immunization["level"]
     immunization_order .<= immunization_level / length(immunization_order)
