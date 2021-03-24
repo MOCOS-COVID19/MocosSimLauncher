@@ -45,7 +45,7 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
     immunization = initial_conditions["immunization"]
     immunization_order::AbstractVector{T} where T<: Integer = load(immunization["order_data"], "order")
     immunization_level::Real = immunization["level"]
-    immunization_order .<= immunization_level / length(immunization_order)
+    immunization_order .<= immunization_level * length(immunization_order)
   else
     nothing
   end
@@ -79,6 +79,7 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
     MocosSim.initialfeed!(state, num_initial_infected)
 
     if immune !== nothing
+      @info "immunizing" count(immune)
       for i in 1:num_individuals
         if !immune[i]
           continue
@@ -86,6 +87,7 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
         individual = state.individuals[i]
         state.individuals[i] = @set individual.health = MocosSim.Recovered
       end
+      @info "immunized" count(getproperty.( state.individuals, :health) .== MocosSim.Recovered)
     end
 
     callback = callbacks[threadid()]
