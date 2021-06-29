@@ -19,8 +19,8 @@ function pushtrajectory!(s::Summary, trajectory_id::Integer, ::Base.AbstractLock
   s.last_infections[trajectory_id] = max_time
   s.num_infections[trajectory_id] = count(MocosSim.istransmission, state.forest.inedges)
   counts = Vector{UInt32}(undef, ceil(Int, max_time))
-  s.peak_daily_infections[trajectory_id] = maximum(daily!(time_or_nan, counts, state.forest.inedges))
-  s.peak_daily_detections[trajectory_id] = maximum(daily!(counts, skipmissing(cb.detection_times)))
+  s.peak_daily_infections[trajectory_id] = maximum(daily!(time_or_nan, counts, state.forest.inedges), init=0)
+  s.peak_daily_detections[trajectory_id] = maximum(daily!(counts, skipmissing(cb.detection_times)), init=0)
   nothing
 end
 

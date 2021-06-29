@@ -41,22 +41,21 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
   num_initial_infected = initial_conditions["cardinalities"]["infectious"] |> Int
   params_seed = get(json, "params_seed", 0)
 
-  immune = if haskey(initial_conditions, "immunization")
-    immunization = initial_conditions["immunization"]
-    immunization_order::AbstractVector{T} where T<: Integer = load(immunization["order_data"], "order")
-    immunization_level::Real = immunization["level"]
-    immunization_order .<= immunization_level * length(immunization_order)
-  else
-    nothing
-  end
-
   @info "loading population and setting up parameters" params_seed
   rng = MersenneTwister(params_seed)
   GC.gc()
   params = read_params(json, rng)
   GC.gc()
-
   num_individuals =  MocosSim.numindividuals(params)
+
+  immune = if haskey(initial_conditions, "immunization")
+    immunization = initial_conditions["immunization"]
+    immunization_order::AbstractVector{T} where T<: Integer = load(immunization["order_data"], "order")
+    immunization_level::Real = immunization["level"]
+    immunization_order .<= immunization_level * num_individuals
+  else
+    nothing
+  end
 
   @info "allocating simulation states"
   states = [MocosSim.SimState(num_individuals) for _ in 1:nthreads()]
@@ -79,6 +78,7 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
     MocosSim.initialfeed!(state, num_initial_infected)
 
     if immune !== nothing
+      immune::AbstractVector{Bool}
       @info "immunizing" count(immune)
       for i in 1:num_individuals
         if !immune[i]
