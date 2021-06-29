@@ -48,13 +48,16 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
   GC.gc()
   num_individuals =  MocosSim.numindividuals(params)
 
-  immune = if haskey(initial_conditions, "immunization")
+  immune = nothing
+  if haskey(initial_conditions, "immunization")
     immunization = initial_conditions["immunization"]
-    immunization_order::AbstractVector{T} where T<: Integer = load(immunization["order_data"], "order")
+    immunization_ordering::AbstractVector{T} where T<: Integer = load(immunization["order_data"], "ordering")
     immunization_level::Real = immunization["level"]
-    immunization_order .<= immunization_level * num_individuals
-  else
-    nothing
+
+    num_immune = round(UInt, immunization_level * num_individuals)
+    immune_ids = @view immunization_ordering[begin : num_immune]
+    immune = falses(num_individuals)
+    immune[immune_ids] .= true
   end
 
   @info "allocating simulation states"
