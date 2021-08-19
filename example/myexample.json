@@ -21,7 +21,8 @@
       "peak" : 10,
       "height" : 0.8,
       "minimum" : 0.1
-    }
+    },
+    "frequency" : 0.05
   }, 
   "initial_conditions": {
     "cardinalities": {

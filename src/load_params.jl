@@ -32,11 +32,12 @@ function read_params(json, rng::AbstractRNG)
     params = get(modulation, "params", Dict{String,Any}())
     modulation["function"], NamedTuple{Tuple(Symbol.(keys(params)))}(values(params))
   end
-
+  travels_frequency::MocosSim.TimePoint = 0.0
   infection_travels_name, infection_travels_params = if !haskey(json, "travels")
     nothing, NamedTuple{}()
   else
     travels = json["travels"]
+    travels_frequency = travels["frequency"] |> MocosSim.TimePoint
     params2 = get(travels, "params", Dict{String,Any}())
     travels["function"], NamedTuple{Tuple(Symbol.(keys(params2)))}(values(params2))
   end
@@ -74,6 +75,7 @@ function read_params(json, rng::AbstractRNG)
 
     infection_travels_name=infection_travels_name,
     infection_travels_params=infection_travels_params,
+    travels_frequency = travels_frequency,
 
     spreading_alpha=spreading_alpha,
     spreading_x0=spreading_x0,
