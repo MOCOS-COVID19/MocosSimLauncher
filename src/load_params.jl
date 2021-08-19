@@ -33,6 +33,14 @@ function read_params(json, rng::AbstractRNG)
     modulation["function"], NamedTuple{Tuple(Symbol.(keys(params)))}(values(params))
   end
 
+  infection_travels_name, infection_travels_params = if !haskey(json, "travels")
+    nothing, NamedTuple{}()
+  else
+    travels = json["travels"]
+    params2 = get(travels, "params", Dict{String,Any}())
+    travels["function"], NamedTuple{Tuple(Symbol.(keys(params2)))}(values(params2))
+  end
+
   spreading = get(json, "spreading", nothing)
   spreading_alpha = isnothing(spreading) ? nothing : spreading["alpha"]
   spreading_x0 = isnothing(spreading) ? 1 : get(spreading, "x0", 1)
@@ -63,6 +71,9 @@ function read_params(json, rng::AbstractRNG)
 
     infection_modulation_name=infection_modulation_name,
     infection_modulation_params=infection_modulation_params,
+
+    infection_travels_name=infection_travels_name,
+    infection_travels_params=infection_travels_params,
 
     spreading_alpha=spreading_alpha,
     spreading_x0=spreading_x0,

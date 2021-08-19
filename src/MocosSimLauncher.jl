@@ -36,6 +36,11 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
   json = JSON.parsefile(cmd_args["JSON"])
 
   max_num_infected = json["stop_simulation_threshold"] |> Int
+  if haskey(json,"stop_simulation_time")
+    time_limit = json["stop_simulation_time"] |> MocosSim.TimePoint
+  else
+    time_limit =  2^15-1 |> MocosSim.TimePoint
+  end
   num_trajectories = json["num_trajectories"] |> Int
   initial_conditions = json["initial_conditions"]
   num_initial_infected = initial_conditions["cardinalities"]["infectious"] |> Int
@@ -62,12 +67,14 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
 
   @info "allocating simulation states"
   states = [MocosSim.SimState(num_individuals) for _ in 1:nthreads()]
-  callbacks = [DetectionCallback(num_individuals, max_num_infected) for _ in 1:nthreads()]
+  callbacks = [DetectionCallback(num_individuals, max_num_infected, time_limit) for _ in 1:nthreads()]
   outputs = make_outputs(cmd_args, num_trajectories)
 
   for o in outputs
     beforetrajectories(o, params)
   end
+
+  @info "stop_simulation" time_limit
 
   @info "starting simulation" num_trajectories
   writelock = ReentrantLock()
@@ -79,6 +86,7 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
     state = states[threadid()]
     MocosSim.reset!(state, trajectory_id)
     MocosSim.initialfeed!(state, num_initial_infected)
+    #MocosSim.outsidefeed!(state, num_initial_infected)
 
     if immune !== nothing
       immune::AbstractVector{Bool}
