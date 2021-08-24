@@ -1,44 +1,44 @@
 {
-  "num_trajectories" : 10,
+  "num_trajectories" : 5,
   "population_path" : "example/dolnoslaskie_population.jld2",
-  "detection_mild_proba" : 0.0,
+  "detection_mild_proba" : 0.3,
   "contact_tracking": {
     "probability" : 0.5,
     "backward_detection_delay" : 1.75,
     "forward_detection_delay" : 1.75,
-    "testing_time" : 0.25
+    "testing_time" : 3.0
   },
   "transmission_probabilities": {
-    "household": 0.3,
-    "constant": 1.35,
+    "household": 0.0217,
+    "constant": 1.8225,
     "hospital": 0.0,
-    "friendship": 0.0,
-    "british_strain_multiplier": 1.7
+    "friendship": 0.0
   },
-  "modulation":{
-    "function" : "TanhModulation",
+  "travels" : {
+    "function" : "Holiday",
     "params" : {
-      "scale": 2000,
-      "loc": 500,
-      "weight_detected": 1,
-      "weight_deaths": 0,
-      "limit_value": 1.0
-    }
-  },
-  "spreading" : {
-    "alpha" : 3,
-    "x0" : 1,
-    "truncation" : 100
-  },
+      "days" : 30,
+      "peak" : 10,
+      "height" : 0.8,
+      "minimum" : 0.1
+    },
+    "frequency" : 0.05
+  }, 
   "initial_conditions": {
     "cardinalities": {
-      "infectious": 100
+      "infectious": 50
     }
   },
   "phone_tracking": {
-    "usage" : 0.3,
+    "usage" : 0.03,
     "detection_delay" : 0.25,
     "usage_by_household" : true
   },
-  "stop_simulation_threshold": 1000000
+  "screening" : {
+    "begin_day" : 1.5,
+    "precision" : 0.9,
+    "frequency" : 3.5
+  },
+  "stop_simulation_threshold": 1000000,
+  "stop_simulation_time" : 50
 }
