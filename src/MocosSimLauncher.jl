@@ -82,7 +82,9 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
     state = states[threadid()]
     MocosSim.reset!(state, trajectory_id)
     MocosSim.initialfeed!(state, num_initial_infected)
-    #MocosSim.outsidefeed!(state, num_initial_infected)
+    if params.infection_travels_function != nothing
+      MocosSim.outsidefeed!(state, params, time_limit)
+    end
 
     if immune !== nothing
       immune::AbstractVector{Bool}

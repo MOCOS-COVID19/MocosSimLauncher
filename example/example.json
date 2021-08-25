@@ -18,7 +18,7 @@
     "function" : "Holiday",
     "params" : {
       "days" : 30,
-      "peak" : 10,
+      "peak" : 20,
       "height" : 0.8,
       "minimum" : 0.1
     },
