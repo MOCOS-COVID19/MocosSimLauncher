@@ -24,6 +24,11 @@
     },
     "frequency" : 0.05
   }, 
+  "screening" : {
+    "begin_day" : 1.5,
+    "precision" : 0.9,
+    "frequency" : 3.5
+  },
   "initial_conditions": {
     "cardinalities": {
       "infectious": 50
@@ -35,5 +40,5 @@
     "usage_by_household" : true
   },
   "stop_simulation_threshold": 1000000,
-  "stop_simulation_time" : 20
+  "stop_simulation_time" : 50
 }
