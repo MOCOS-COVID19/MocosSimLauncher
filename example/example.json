@@ -34,11 +34,6 @@
     "detection_delay" : 0.25,
     "usage_by_household" : true
   },
-  "screening" : {
-    "begin_day" : 1.5,
-    "precision" : 0.9,
-    "frequency" : 3.5
-  },
   "stop_simulation_threshold": 1000000,
   "stop_simulation_time" : 50
 }

@@ -86,9 +86,6 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
     state = states[threadid()]
     MocosSim.reset!(state, trajectory_id)
     MocosSim.initialfeed!(state, num_initial_infected)
-    if params.screening_params != nothing
-      MocosSim.screen_children!(rng, state, params)
-    end
     #MocosSim.outsidefeed!(state, num_initial_infected)
 
     if immune !== nothing
