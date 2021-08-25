@@ -37,7 +37,7 @@ function read_params(json, rng::AbstractRNG)
     nothing, NamedTuple{}()
   else
     travels = json["travels"]
-    travels_frequency = travels["frequency"] |> MocosSim.TimePoint
+    travels_frequency = get(travels, "frequency", 0.05) |> MocosSim.TimePoint
     params2 = get(travels, "params", Dict{String,Any}())
     travels["function"], NamedTuple{Tuple(Symbol.(keys(params2)))}(values(params2))
   end

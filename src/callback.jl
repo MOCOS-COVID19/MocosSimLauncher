@@ -11,7 +11,7 @@ struct DetectionCallback
     time_limit::MocosSim.TimePoint
 end
 
-DetectionCallback(sz::Integer, max_num_infected::Integer=10^8, time_limit::MocosSim.TimePoint=365) = DetectionCallback(
+DetectionCallback(sz::Integer, max_num_infected::Integer=10^8, time_limit::MocosSim.TimePoint=typemax(MocosSim.TimePoint)) = DetectionCallback(
     Vector{OptTimePoint}(missing, sz),
     fill(UInt8(0), sz),
     Vector{OptTimePoint}(missing, sz),

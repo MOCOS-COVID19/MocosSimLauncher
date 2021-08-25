@@ -35,5 +35,5 @@
     "usage_by_household" : true
   },
   "stop_simulation_threshold": 1000000,
-  "stop_simulation_time" : 50
+  "stop_simulation_time" : 20
 }

@@ -36,11 +36,7 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
   json = JSON.parsefile(cmd_args["JSON"])
 
   max_num_infected = json["stop_simulation_threshold"] |> Int
-  if haskey(json,"stop_simulation_time")
-    time_limit = json["stop_simulation_time"] |> MocosSim.TimePoint
-  else
-    time_limit =  2^15-1 |> MocosSim.TimePoint
-  end
+  time_limit = get(json, "stop_simulation_time", typemax(MocosSim.TimePoint)) |> MocosSim.TimePoint
   num_trajectories = json["num_trajectories"] |> Int
   initial_conditions = json["initial_conditions"]
   num_initial_infected = initial_conditions["cardinalities"]["infectious"] |> Int
