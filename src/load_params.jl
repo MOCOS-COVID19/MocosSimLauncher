@@ -45,10 +45,9 @@ function read_params(json, rng::AbstractRNG)
   screening_params = if !haskey(json, "screening")
     nothing
   else
-    screening_begin = json["screening"]["begin_day"] |> Float64
-    screening_precision = json["screening"]["precision"] |> Float64
-    screening_frequency = json["screening"]["frequency"] |> Float64
-    MocosSim.ScreeningParams(screening_begin, screening_precision, screening_frequency)
+    screen = json["screening"]
+    NamedTuple{Tuple(Symbol.(keys(screen)))}(values(screen))
+    MocosSim.ScreeningParams(;NamedTuple{Tuple(Symbol.(keys(screen)))}(values(screen))...)
   end
 
   spreading = get(json, "spreading", nothing)
