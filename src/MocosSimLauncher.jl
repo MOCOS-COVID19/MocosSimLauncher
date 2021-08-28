@@ -86,7 +86,7 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
       MocosSim.outsidefeed!(state, params, time_limit)
     if params.screening_params != nothing
       @info "screening on"
-      MocosSim.screen!(rng, state, params)
+      MocosSim.add_screening!(state, params)
     end
 
     if immune !== nothing
