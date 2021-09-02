@@ -84,6 +84,7 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
     MocosSim.initialfeed!(state, num_initial_infected)
     if params.infection_travels_function != nothing
       MocosSim.outsidefeed!(state, params, time_limit)
+    end
     if params.screening_params != nothing
       @info "screening on"
       MocosSim.add_screening!(state, params)
