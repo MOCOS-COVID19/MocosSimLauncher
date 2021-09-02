@@ -200,8 +200,8 @@ deps = ["CSV", "DataFrames", "DataStructures", "Distributions", "FixedPointNumbe
 git-tree-sha1 = "ec8c826eafdea34153e2230df99772a9087f0c8e"
 repo-rev = "mbodych/screening_test"
 repo-url = "https://github.com/MOCOS-COVID19/MocosSim.git"
-uuid = "af72bc66-7bc2-4ee8-90df-e21de508fcdb"
-version = "0.3.99"
+uuid = "af72bc66-7bc2-4ee8-90df-e21de508fcde"
+version = "0.3.991"
 
 [[OpenSpecFun_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "Libdl", "Pkg"]
