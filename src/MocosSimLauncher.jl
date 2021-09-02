@@ -4,6 +4,7 @@ module MocosSimLauncher
 
 using ArgParse
 using Base.Threads
+using CodecZlib
 using DataFrames
 using FileIO
 using JLD2
@@ -74,8 +75,7 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
   progress = ProgressMeter.Progress(num_trajectories)
   GC.gc()
 
-  #@threads
-  for trajectory_id in 1:num_trajectories
+  @threads for trajectory_id in 1:num_trajectories
     state = states[threadid()]
     MocosSim.reset!(state, trajectory_id)
     MocosSim.initialfeed!(state, num_initial_infected)
@@ -95,15 +95,15 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
 
     callback = callbacks[threadid()]
     reset!(callback)
-    #try
+    try
       MocosSim.simulate!(state, params, callback)
       for o in outputs
         pushtrajectory!(o, trajectory_id, writelock, state, params, callback)
       end
-    #catch err
-    #  @warn "Failed on thread " threadid() trajectory_id err
-    #  foreach(x -> println(stderr, x), stacktrace(catch_backtrace()))
-    #end
+    catch err
+      @warn "Failed on thread " threadid() trajectory_id err
+      foreach(x -> println(stderr, x), stacktrace(catch_backtrace()))
+    end
 
     ProgressMeter.next!(progress) # is thread-safe
   end
