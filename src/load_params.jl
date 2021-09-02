@@ -87,10 +87,6 @@ function read_params(json, rng::AbstractRNG)
     infection_modulation_name=infection_modulation_name,
     infection_modulation_params=infection_modulation_params,
 
-    infection_travels_name=infection_travels_name,
-    infection_travels_params=infection_travels_params,
-    travels_frequency = travels_frequency,
-
     screening_params = screening_params,
 
     spreading_alpha=spreading_alpha,

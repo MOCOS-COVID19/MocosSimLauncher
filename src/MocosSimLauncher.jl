@@ -82,9 +82,14 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
     state = states[threadid()]
     MocosSim.reset!(state, trajectory_id)
     MocosSim.initialfeed!(state, num_initial_infected)
-    if params.infection_travels_function != nothing
-      MocosSim.outsidefeed!(state, params, time_limit)
+    if haskey(json, "travels")
+      @info "travels on"
+      travels = json["travels"]
+      travels_frequency = get(travels, "frequency", 0.05) |> MocosSim.TimePoint
+      params2 = get(travels, "params", Dict{String,Any}())
+      MocosSim.make_imported_cases(travels["function"], NamedTuple{Tuple(Symbol.(keys(params2)))}(values(params2)))(state, params)
     end
+    # MocosSim.outsidefeed!(state, params, time_limit)
     if params.screening_params != nothing
       @info "screening on"
       MocosSim.add_screening!(state, params)
