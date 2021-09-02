@@ -5,9 +5,13 @@ function read_params(json, rng::AbstractRNG)
   constant_kernel_param = json["transmission_probabilities"]["constant"]  |> float
   household_kernel_param = json["transmission_probabilities"]["household"] |> float
   hospital_kernel_param = get(json["transmission_probabilities"], "hospital", 0.0) |> float
-  friendship_kernel_param = get(json["transmission_probabilities"], "friendship", 0.0) |> float
+  # friendship_kernel_param = get(json["transmission_probabilities"], "friendship", 0.0) |> float
   british_strain_multiplier = get(json["transmission_probabilities"], "british_strain_multiplier", 1.7) |> float
+  delta_strain_multiplier = get(json["transmission_probabilities"], "delta_strain_multiplier", 1.7* 1.5) |> float
 
+  age_coupling_data_path = get(json["transmission_probabilities"], "age_coupling_data_path", nothing)
+  age_coupling_tresholds, age_coupling_weights, age_coupling_use_genders =
+    isnothing(age_coupling_data_path) ? (nothing, nothing, nothing) : load(age_coupling_data_path, "age_thresholds", "age_coupling_weights", "age_coupling_use_genders")
   mild_detection_prob = json["detection_mild_proba"]  |> float
 
   tracing_prob = json["contact_tracking"]["probability"]  |> float
@@ -64,7 +68,9 @@ function read_params(json, rng::AbstractRNG)
     constant_kernel_param = constant_kernel_param,
     household_kernel_param = household_kernel_param,
     hospital_kernel_param = hospital_kernel_param,
-    friendship_kernel_param = friendship_kernel_param,
+    age_coupling_tresholds=age_coupling_tresholds,
+    age_coupling_weights=age_coupling_weights,
+    age_coupling_use_genders=age_coupling_use_genders,
 
     backward_tracing_prob = tracing_prob,
     backward_detection_delay = tracing_backward_delay,
@@ -89,23 +95,8 @@ function read_params(json, rng::AbstractRNG)
 
     spreading_alpha=spreading_alpha,
     spreading_x0=spreading_x0,
-    spreading_truncation=spreading_truncation
+    spreading_truncation=spreading_truncation,
+    british_strain_multiplier=british_strain_multiplier,
+    delta_strain_multiplier=delta_strain_multiplier
   )
-end
-
-function load_states(num_individuals::Integer; precomputed_state_path::Union{Nothing, AbstractString}=nothing, num_states::Int=nthreads())
-  if precomputed_state_path === nothing
-    return [MocosSim.SimState(num_individuals) for _ in 1:num_states]
-  end
-  state = load(precomputed_state_path, "state")
-  state::MocosSim.SimState
-
-  @assert MocosSim.numindividuals(state) == num_individuals
-
-  states = MocosSim.SimState[state]
-  sizehint!(states, num_states)
-  for _ in 2:num_states
-    push!(states, deepcopy(state))
-  end
-  states
 end
