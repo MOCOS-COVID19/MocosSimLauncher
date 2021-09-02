@@ -10,7 +10,7 @@ function read_params(json, rng::AbstractRNG)
   delta_strain_multiplier = get(json["transmission_probabilities"], "delta_strain_multiplier", 1.7* 1.5) |> float
 
   age_coupling_data_path = get(json["transmission_probabilities"], "age_coupling_data_path", nothing)
-  age_coupling_tresholds, age_coupling_weights, age_coupling_use_genders =
+  age_coupling_thresholds, age_coupling_weights, age_coupling_use_genders =
     isnothing(age_coupling_data_path) ? (nothing, nothing, false) : load(age_coupling_data_path, "age_thresholds", "age_coupling_weights", "age_coupling_use_genders")
   mild_detection_prob = json["detection_mild_proba"]  |> float
 
@@ -68,7 +68,7 @@ function read_params(json, rng::AbstractRNG)
     constant_kernel_param = constant_kernel_param,
     household_kernel_param = household_kernel_param,
     hospital_kernel_param = hospital_kernel_param,
-    age_coupling_tresholds=age_coupling_tresholds,
+    age_coupling_thresholds=age_coupling_thresholds,
     age_coupling_weights=age_coupling_weights,
     age_coupling_use_genders=age_coupling_use_genders,
 
