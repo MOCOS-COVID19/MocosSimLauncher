@@ -6,8 +6,8 @@ function read_params(json, rng::AbstractRNG)
   household_kernel_param = json["transmission_probabilities"]["household"] |> float
   hospital_kernel_param = get(json["transmission_probabilities"], "hospital", 0.0) |> float
   # friendship_kernel_param = get(json["transmission_probabilities"], "friendship", 0.0) |> float
-  british_strain_multiplier = get(json["transmission_probabilities"], "british_strain_multiplier", 1.7) |> float
-  delta_strain_multiplier = get(json["transmission_probabilities"], "delta_strain_multiplier", 1.7* 1.5) |> float
+  british_strain_multiplier = get(json["transmission_probabilities"], "british_strain_multiplier", 1.5) |> float
+  delta_strain_multiplier = get(json["transmission_probabilities"], "delta_strain_multiplier", 1.5 * 1.5) |> float
 
   age_coupling_data_path = get(json["transmission_probabilities"], "age_coupling_data_path", nothing)
   age_coupling_thresholds, age_coupling_weights, age_coupling_use_genders =
