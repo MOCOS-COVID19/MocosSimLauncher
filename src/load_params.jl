@@ -11,7 +11,7 @@ function read_params(json, rng::AbstractRNG)
 
   age_coupling_data_path = get(json["transmission_probabilities"], "age_coupling_data_path", nothing)
   age_coupling_tresholds, age_coupling_weights, age_coupling_use_genders =
-    isnothing(age_coupling_data_path) ? (nothing, nothing, nothing) : load(age_coupling_data_path, "age_thresholds", "age_coupling_weights", "age_coupling_use_genders")
+    isnothing(age_coupling_data_path) ? (nothing, nothing, false) : load(age_coupling_data_path, "age_thresholds", "age_coupling_weights", "age_coupling_use_genders")
   mild_detection_prob = json["detection_mild_proba"]  |> float
 
   tracing_prob = json["contact_tracking"]["probability"]  |> float
