@@ -196,7 +196,7 @@ version = "0.4.5"
 uuid = "a63ad114-7e13-5084-954f-fe012c677804"
 
 [[MocosSim]]
-deps = ["CSV", "DataFrames", "DataStructures", "Distributions", "FixedPointNumbers", "LinearAlgebra", "Random", "SaferIntegers", "Setfield", "StaticArrays"]
+deps = ["CSV", "DataFrames", "DataStructures", "Distributions", "FixedPointNumbers", "LinearAlgebra", "Random", "SaferIntegers", "Setfield", "SortingAlgorithms", "StaticArrays"]
 git-tree-sha1 = "ec8c826eafdea34153e2230df99772a9087f0c8e"
 repo-rev = "mbodych/screening_test"
 repo-url = "https://github.com/MOCOS-COVID19/MocosSim.git"
