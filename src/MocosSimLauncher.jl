@@ -87,7 +87,7 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
       travels = json["travels"]
       travels_frequency = get(travels, "frequency", 0.05) |> MocosSim.TimePoint
       params2 = get(travels, "params", Dict{String,Any}())
-      MocosSim.make_imported_cases(travels["function"], NamedTuple{Tuple(Symbol.(keys(params2)))}(values(params2)))(state, params)
+      MocosSim.make_imported_cases(travels["function"]; NamedTuple{Tuple(Symbol.(keys(params2)))}(values(params2))...)(state, params)
     end
     # MocosSim.outsidefeed!(state, params, time_limit)
     if params.screening_params != nothing
