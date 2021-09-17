@@ -37,6 +37,7 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
   json = JSON.parsefile(cmd_args["JSON"])
 
   max_num_infected = json["stop_simulation_threshold"] |> Int
+  time_limit = get(json, "stop_simulation_time", typemax(MocosSim.TimePoint)) |> MocosSim.TimePoint
   num_trajectories = json["num_trajectories"] |> Int
   initial_conditions = json["initial_conditions"]
   num_initial_infected = initial_conditions["cardinalities"]["infectious"] |> Int
@@ -63,7 +64,7 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
 
   @info "allocating simulation states"
   states = [MocosSim.SimState(num_individuals) for _ in 1:nthreads()]
-  callbacks = [DetectionCallback(num_individuals, max_num_infected) for _ in 1:nthreads()]
+  callbacks = [DetectionCallback(num_individuals, max_num_infected, time_limit) for _ in 1:nthreads()]
   outputs = make_outputs(cmd_args, num_trajectories)
 
   for o in outputs
@@ -74,11 +75,32 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
   writelock = ReentrantLock()
   progress = ProgressMeter.Progress(num_trajectories)
   GC.gc()
+  
+  import_funcs = MocosSim.AbstractOutsideCases[]
+  if haskey(json,"imported_cases")
+    for fun in json["imported_cases"]
+      import_name = fun["function"]
+      @info "import function: " import_name
+      import_preparams = get(fun, "params", Dict{String,Any}())
+      if haskey(import_preparams,"strain")
+        strain = import_preparams["strain"] *"Strain"
+        import_preparams["strain"] = getfield(MocosSim, Symbol(strain))::MocosSim.StrainKind
+      end
+      import_params = NamedTuple{Tuple(Symbol.(keys(import_preparams)))}(values(import_preparams))
+      import_fun = MocosSim.make_imported_cases(import_name; import_params...)
+      push!(import_funcs,import_fun)
+    end
+  else
+    error("the import function was not used!")
+  end
 
   @threads for trajectory_id in 1:num_trajectories
     state = states[threadid()]
     MocosSim.reset!(state, trajectory_id)
-    MocosSim.initialfeed!(state, num_initial_infected)
+    
+    for fun in import_funcs
+      fun(state, params)
+    end
 
     if immune !== nothing
       immune::AbstractVector{Bool}

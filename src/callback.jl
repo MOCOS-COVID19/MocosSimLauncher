@@ -8,15 +8,17 @@ struct DetectionCallback
     tracing_types::Vector{UInt8}
 
     max_num_infected::UInt32
+    time_limit::MocosSim.TimePoint
 end
 
-DetectionCallback(sz::Integer, max_num_infected::Integer=10^8) = DetectionCallback(
+DetectionCallback(sz::Integer, max_num_infected::Integer=10^8, time_limit::MocosSim.TimePoint=typemax(MocosSim.TimePoint)) = DetectionCallback(
     Vector{OptTimePoint}(missing, sz),
     fill(UInt8(0), sz),
     Vector{OptTimePoint}(missing, sz),
     fill(UInt32(0), sz),
     fill(UInt8(0), sz),
-    max_num_infected
+    max_num_infected,
+    time_limit
 )
 
 function reset!(cb::DetectionCallback)
@@ -38,7 +40,7 @@ function (cb::DetectionCallback)(event::MocosSim.Event, state::MocosSim.SimState
     cb.tracing_sources[subject] = MocosSim.source(event)
     cb.tracing_types[subject] = MocosSim.tracingkind(event) |> UInt8
   end
-  return MocosSim.numinfected(state.stats) < cb.max_num_infected
+  return MocosSim.numinfected(state.stats) < cb.max_num_infected && MocosSim.time(event) < cb.time_limit
 end
 
 function saveparams(dict, cb::DetectionCallback, prefix::AbstractString="")

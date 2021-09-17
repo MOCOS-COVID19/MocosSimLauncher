@@ -1,7 +1,7 @@
 {
   "num_trajectories" : 10,
   "population_path" : "example/dolnoslaskie_population.jld2",
-  "detection_mild_proba" : 0.0,
+  "detection_mild_proba" : 0.3,
   "contact_tracking": {
     "probability" : 0.5,
     "backward_detection_delay" : 1.75,
@@ -11,10 +11,30 @@
   "transmission_probabilities": {
     "household": 0.3,
     "constant": 1.35,
-    "hospital": 0.0,
-    "friendship": 0.0,
-    "british_strain_multiplier": 1.7
+    "hospital": 0.0
   },
+  "imported_cases" : [
+    {
+      "function" : "ParabolicOutsideCases",
+      "params" : {
+        "days" : 30,
+        "peak" : 20,
+        "height" : 0.8,
+        "minimum" : 0.01,
+        "frequency" : 0.02,
+        "strain" : "Delta"
+      }
+    },
+    {
+      "function" : "InstantOusideCases",
+      "params" : {
+        "num_infections" : 100,
+        "import_time" : 0.0,
+        "strain" : "Chinese"
+      }
+    }
+  ]
+  , 
   "modulation":{
     "function" : "TanhModulation",
     "params" : {
@@ -36,9 +56,10 @@
     }
   },
   "phone_tracking": {
-    "usage" : 0.3,
+    "usage" : 0.03,
     "detection_delay" : 0.25,
     "usage_by_household" : true
   },
-  "stop_simulation_threshold": 1000000
+  "stop_simulation_threshold": 1000000,
+  "stop_simulation_time" : 100
 }

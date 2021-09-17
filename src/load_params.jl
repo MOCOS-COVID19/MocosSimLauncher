@@ -35,7 +35,6 @@ function read_params(json, rng::AbstractRNG)
     params = get(modulation, "params", Dict{String,Any}())
     modulation["function"], NamedTuple{Tuple(Symbol.(keys(params)))}(values(params))
   end
-
   spreading = get(json, "spreading", nothing)
   spreading_alpha = isnothing(spreading) ? nothing : spreading["alpha"]
   spreading_x0 = isnothing(spreading) ? 1 : get(spreading, "x0", 1)
