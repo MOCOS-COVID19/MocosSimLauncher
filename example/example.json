@@ -35,6 +35,13 @@
     }
   ]
   , 
+  "screening" : {
+    "start_time" : 20,
+    "precision" : 0.8,
+    "period" : 7.0,
+    "lower_bound_age" : 8,
+    "upper_bound_age" : 16
+  },
   "modulation":{
     "function" : "TanhModulation",
     "params" : {

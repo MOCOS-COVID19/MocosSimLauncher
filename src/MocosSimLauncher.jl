@@ -93,13 +93,15 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
   else
     error("the import function was not used!")
   end
-
   @threads for trajectory_id in 1:num_trajectories
     state = states[threadid()]
     MocosSim.reset!(state, trajectory_id)
     
     for fun in import_funcs
       fun(state, params)
+    end
+    if params.screening_params !== nothing
+      MocosSim.add_screening!(state, params)
     end
 
     if immune !== nothing

@@ -35,6 +35,15 @@ function read_params(json, rng::AbstractRNG)
     params = get(modulation, "params", Dict{String,Any}())
     modulation["function"], NamedTuple{Tuple(Symbol.(keys(params)))}(values(params))
   end
+
+  screening_params = if !haskey(json, "screening")
+    nothing
+  else
+    screen = json["screening"]
+    NamedTuple{Tuple(Symbol.(keys(screen)))}(values(screen))
+    MocosSim.ScreeningParams(;NamedTuple{Tuple(Symbol.(keys(screen)))}(values(screen))...)
+  end
+
   spreading = get(json, "spreading", nothing)
   spreading_alpha = isnothing(spreading) ? nothing : spreading["alpha"]
   spreading_x0 = isnothing(spreading) ? 1 : get(spreading, "x0", 1)
@@ -69,6 +78,8 @@ function read_params(json, rng::AbstractRNG)
 
     infection_modulation_name=infection_modulation_name,
     infection_modulation_params=infection_modulation_params,
+
+    screening_params = screening_params,
 
     spreading_alpha=spreading_alpha,
     spreading_x0=spreading_x0,
