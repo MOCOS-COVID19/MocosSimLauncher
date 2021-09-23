@@ -4,14 +4,15 @@ function read_params(json, rng::AbstractRNG)
   constant_kernel_param = json["transmission_probabilities"]["constant"]  |> float
   household_kernel_param = json["transmission_probabilities"]["household"] |> float
   hospital_kernel_param = get(json["transmission_probabilities"], "hospital", 0.0) |> float
-  british_strain_multiplier = get(json["transmission_probabilities"], "british_strain_multiplier", 1.7) |> float
-  delta_strain_multiplier = get(json["transmission_probabilities"], "delta_strain_multiplier", 1.7* 1.5) |> float
 
-  age_coupling_kernel_param = get(json, "age_coupling_kernel_param", nothing)
+  age_coupling_kernel_param = get(json["transmission_probabilities"], "age_coupling_param", nothing)
   age_coupling_data_path = get(json["transmission_probabilities"], "age_coupling_data_path", nothing)
   @assert isnothing(age_coupling_kernel_param) == isnothing(age_coupling_data_path)
   age_coupling_thresholds, age_coupling_weights, age_coupling_use_genders =
     isnothing(age_coupling_data_path) ? (nothing, nothing, false) : load(age_coupling_data_path, "age_thresholds", "contact_mat", "uses_genders")
+
+  british_strain_multiplier = get(json["transmission_probabilities"], "british_strain_multiplier", 1.5) |> float
+  delta_strain_multiplier = get(json["transmission_probabilities"], "delta_strain_multiplier", 1.5 * 1.5) |> float
 
   mild_detection_prob = json["detection_mild_proba"]  |> float
 

@@ -80,7 +80,6 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
   if haskey(json,"imported_cases")
     for fun in json["imported_cases"]
       import_name = fun["function"]
-      @info "import function: " import_name
       import_preparams = get(fun, "params", Dict{String,Any}())
       if haskey(import_preparams,"strain")
         strain = import_preparams["strain"] *"Strain"

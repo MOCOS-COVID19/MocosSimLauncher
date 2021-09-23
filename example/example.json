@@ -9,9 +9,15 @@
     "testing_time" : 0.25
   },
   "transmission_probabilities": {
-    "household": 0.3,
+    "household": 0.01,
     "constant": 1.35,
-    "hospital": 0.0
+    "hospital": 0.0,
+
+    "age_coupling_data_path": "example/contact_mat_pol.jld2",
+    "age_coupling_param": 1.35,
+
+    "british_strain_multiplier": 1.5,
+    "delta_strain_multiplier": 2.25
   },
   "imported_cases" : [
     {
@@ -33,8 +39,7 @@
         "strain" : "Chinese"
       }
     }
-  ]
-  , 
+  ],
   "screening" : {
     "start_time" : 20,
     "precision" : 0.8,
