@@ -75,7 +75,7 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
   writelock = ReentrantLock()
   progress = ProgressMeter.Progress(num_trajectories)
   GC.gc()
-  
+
   import_funcs = MocosSim.AbstractOutsideCases[]
   if haskey(json,"imported_cases")
     for fun in json["imported_cases"]
@@ -93,10 +93,11 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
   else
     error("the import function was not used!")
   end
+
   @threads for trajectory_id in 1:num_trajectories
     state = states[threadid()]
     MocosSim.reset!(state, trajectory_id)
-    
+
     for fun in import_funcs
       fun(state, params)
     end
