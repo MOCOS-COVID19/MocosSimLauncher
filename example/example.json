@@ -63,8 +63,9 @@
     "truncation" : 100
   },
   "initial_conditions": {
-    "cardinalities": {
-      "infectious": 100
+    "immunization": {
+      "order_data": "example/dolnoslaskie-immunization.jld2",
+      "level": 0.1
     }
   },
   "phone_tracking": {

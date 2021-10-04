@@ -39,8 +39,6 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
   max_num_infected = json["stop_simulation_threshold"] |> Int
   time_limit = get(json, "stop_simulation_time", typemax(MocosSim.TimePoint)) |> MocosSim.TimePoint
   num_trajectories = json["num_trajectories"] |> Int
-  initial_conditions = json["initial_conditions"]
-  num_initial_infected = initial_conditions["cardinalities"]["infectious"] |> Int
   params_seed = get(json, "params_seed", 0)
 
   @info "loading population and setting up parameters" params_seed
@@ -51,17 +49,19 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
   num_individuals =  MocosSim.numindividuals(params)
 
   immune = nothing
-  if haskey(initial_conditions, "immunization")
-    immunization = initial_conditions["immunization"]
-    immunization_ordering::AbstractVector{T} where T<: Integer = load(immunization["order_data"], "ordering")
-    immunization_level::Real = immunization["level"]
+  if haskey(json, "initial_conditions")
+    initial_conditions = json["initial_conditions"]
+    if haskey(initial_conditions, "immunization")
+      immunization = initial_conditions["immunization"]
+      immunization_ordering::AbstractVector{T} where T<: Integer = load(immunization["order_data"], "ordering")
+      immunization_level::Real = immunization["level"]
 
-    num_immune = round(UInt, immunization_level * num_individuals)
-    immune_ids = @view immunization_ordering[begin : num_immune]
-    immune = falses(num_individuals)
-    immune[immune_ids] .= true
+      num_immune = round(UInt, immunization_level * num_individuals)
+      immune_ids = @view immunization_ordering[begin : num_immune]
+      immune = falses(num_individuals)
+      immune[immune_ids] .= true
+    end
   end
-
   @info "allocating simulation states"
   states = [MocosSim.SimState(num_individuals) for _ in 1:nthreads()]
   callbacks = [DetectionCallback(num_individuals, max_num_infected, time_limit) for _ in 1:nthreads()]
