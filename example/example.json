@@ -32,7 +32,7 @@
       }
     },
     {
-      "function" : "InstantOusideCases",
+      "function" : "InstantOutsideCases",
       "params" : {
         "num_infections" : 100,
         "import_time" : 0.0,

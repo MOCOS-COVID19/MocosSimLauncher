@@ -26,6 +26,18 @@ include("outputs.jl")
 
 export launch
 
+function string2enum(enum_group::Type{<:Enum{T}}, str::AbstractString) where {T<:Integer}
+    sym = Symbol(str)
+    for val in instances(enum_group)
+        if sym == Symbol(val)
+            return val
+        end
+    end
+    error("not found $str in $enum_group")
+end
+
+dict2kwargs(dict::Dict{S, Any} where S<:AbstractString) = NamedTuple{Tuple(Symbol.(keys(dict)))}(values(dict))
+
 function launch(args::AbstractVector{T} where T<:AbstractString)
   @info "Stated" nthreads()
   if nthreads() == 1
@@ -76,18 +88,17 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
   progress = ProgressMeter.Progress(num_trajectories)
   GC.gc()
 
-  import_funcs = MocosSim.AbstractOutsideCases[]
-  if haskey(json,"imported_cases")
-    for fun in json["imported_cases"]
-      import_name = fun["function"]
-      import_preparams = get(fun, "params", Dict{String,Any}())
-      if haskey(import_preparams,"strain")
-        strain = import_preparams["strain"] *"Strain"
-        import_preparams["strain"] = getfield(MocosSim, Symbol(strain))::MocosSim.StrainKind
+  outside_case_imports = MocosSim.AbstractOutsideCases[]
+  if haskey(json, "imported_cases")
+    for outside_import in json["imported_cases"]
+      name = outside_import["function"]
+      params_dict = get(outside_import, "params", Dict{String,Any}())
+      if haskey(params_dict, "strain")
+        strain_str = params_dict["strain"] * "Strain"
+        params_dict["strain"] = string2enum(MocosSim.StrainKind, strain_str)
       end
-      import_params = NamedTuple{Tuple(Symbol.(keys(import_preparams)))}(values(import_preparams))
-      import_fun = MocosSim.make_imported_cases(import_name; import_params...)
-      push!(import_funcs,import_fun)
+      outside_cases = MocosSim.make_imported_cases(name; dict2kwargs(params_dict)...)
+      push!(outside_case_imports, outside_cases)
     end
   else
     error("the import function was not used!")
@@ -97,8 +108,8 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
     state = states[threadid()]
     MocosSim.reset!(state, trajectory_id)
 
-    for fun in import_funcs
-      fun(state, params)
+    for outside_fun in outside_case_imports
+      outside_fun(state, params)
     end
     if params.screening_params !== nothing
       MocosSim.add_screening!(state, params)
@@ -106,7 +117,6 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
 
     if immune !== nothing
       immune::AbstractVector{Bool}
-      @info "immunizing" count(immune)
       for i in 1:num_individuals
         if !immune[i]
           continue
@@ -114,7 +124,6 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
         individual = state.individuals[i]
         state.individuals[i] = @set individual.health = MocosSim.Recovered
       end
-      @info "immunized" count(getproperty.( state.individuals, :health) .== MocosSim.Recovered)
     end
 
     callback = callbacks[threadid()]
