@@ -1,4 +1,4 @@
-push!(LOAD_PATH, "../MocosSim")
+#push!(LOAD_PATH, "../MocosSim")
 
 module MocosSimLauncher
 
@@ -147,4 +147,9 @@ function julia_main()::Cint
   return 0
 end
 
+precompile(MocosSim.simulate!, (MocosSim.SimState, MocosSim.SimParams, DetectionCallback))
+precompile(launch, (Vector{String},))
+precompile(julia_main, ())
+
 end
+
