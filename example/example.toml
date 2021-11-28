@@ -1,0 +1,73 @@
+population_path = "example/dolnoslaskie_population.jld2"
+num_trajectories = 10
+mild_detection_prob = 0.3
+stop_simulation_time = 100
+mild_detection_delay = 2.0
+stop_simulation_threshold = 1000000
+
+[infection_modulation]
+function = "TanhModulation"
+
+    [infection_modulation.params]
+    limit_value = 1.0
+    loc = 500
+    weight_detected = 1
+    scale = 2000
+    weight_deaths = 0
+
+[phone_tracing]
+usage_by_household = true
+usage = 0.03
+detection_delay = 0.25
+
+[[imported_cases]]
+function = "ParabolicOutsideCases"
+
+    [imported_cases.params]
+    minimum = 0.01
+    height = 0.8
+    peak = 20
+    days = 30
+    strain = "Delta"
+    frequency = 0.02
+[[imported_cases]]
+function = "InstantOutsideCases"
+
+    [imported_cases.params]
+    import_time = 0.0
+    strain = "Chinese"
+    num_infections = 100
+
+[contact_tracing]
+probability = 0.5
+testing_time = 0.25
+detection_delay = 1.75
+
+[transmission_probabilities]
+constant = 1.35
+age_coupling_data_path = "example/contact_mat_pol.jld2"
+age_coupling_param = 1.35
+british_strain_multiplier = 1.5
+household = 0.01
+hospital = 0.0
+delta_strain_multiplier = 2.25
+
+[spreading]
+alpha = 3
+x0 = 1
+truncation = 100
+
+[screening]
+start_time = 20
+period = 7.0
+upper_bound_age = 16
+precision = 0.8
+lower_bound_age = 8
+
+[healthcare_detections]
+probability = 0.8
+delay = 1.0
+
+[initial_conditions.immunization]
+order_data = "example/dolnoslaskie-immunization.jld2"
+level = 0.1
