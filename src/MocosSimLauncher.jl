@@ -69,8 +69,8 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
     if haskey(initial_conditions, "immunization")
       immunization_cfg = initial_conditions["immunization"]
 
-      if haskey(immunization_cfg, "immunization")
-        immunization = load(immunization_cfg, "immunization")::MocosSim.Immunization
+      if haskey(immunization_cfg, "order_file")
+        immunization = load(immunization_cfg["order_file"], "immunization")::MocosSim.Immunization
         enqueue_immunizations = get(immunization_cfg, "enqueue", true) |> Bool
       end
 
@@ -100,8 +100,6 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
   writelock = ReentrantLock()
   progress = ProgressMeter.Progress(num_trajectories)
   GC.gc()
-
-
 
   outside_case_imports = MocosSim.AbstractOutsideCases[]
   if haskey(config, "imported_cases")
