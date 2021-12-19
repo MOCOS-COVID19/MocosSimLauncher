@@ -52,7 +52,10 @@ function read_params(json, rng::AbstractRNG)
   spreading_x0 = isnothing(spreading) ? 1 : get(spreading, "x0", 1)
   spreading_truncation = isnothing(spreading) ? Inf : get(spreading, "truncation", Inf)
 
-
+  vacc = get(json, "vacc", nothing)
+  age_vaccination_thresholds = isnothing(vacc) ? Int[0, 12, 18, 60] : json["vacc"]["thresholds"] |> Vector{Int}
+  vaccination_uptakes_probs_age =  isnothing(vacc) ? Float32[0.0, 0.36, 0.62, 0.80] : json["vacc"]["probs"] |> Vector{Float32}
+  
   MocosSim.load_params(
     rng;
     population = individuals_df,
@@ -92,5 +95,7 @@ function read_params(json, rng::AbstractRNG)
 
     british_strain_multiplier=british_strain_multiplier,
     delta_strain_multiplier=delta_strain_multiplier,
+    age_vaccination_thresholds = age_vaccination_thresholds,
+    vaccination_uptakes_probs_age = vaccination_uptakes_probs_age
   )
 end

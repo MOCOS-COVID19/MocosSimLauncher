@@ -19,6 +19,10 @@
     "british_strain_multiplier": 1.5,
     "delta_strain_multiplier": 2.25
   },
+  "vacc" : {
+    "thresholds" : [0, 12, 18, 60],
+    "probs" : [0.0, 0.36, 0.62, 0.80]
+  },
   "imported_cases" : [
     {
       "function" : "ParabolicOutsideCases",
