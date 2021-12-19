@@ -47,12 +47,15 @@ function save_daily_trajectories(dict, state::MocosSim.SimState, params::MocosSi
 
   infection_times = Vector{OptTimePoint}(missing, num_individuals)
   contact_kinds = Vector{MocosSim.ContactKind}(undef, num_individuals)
+  non_asymptomatic = Vector{OptTimePoint}(missing, num_individuals)
 
   for i in 1:num_individuals
     event = MocosSim.backwardinfection(state, i)
     kind = contactkind(event)
     contact_kinds[i] = kind
     infection_times[i] = ifelse(kind == MocosSim.NoContact, missing, time(event))
+    severity = MocosSim.severityof(params, i)
+    non_asymptomatic[i] = ifelse(severity == MocosSim.Asymptomatic, missing, 1.0)
   end
 
   hospitalization_progressions = getproperty.(params.progressions, :severe_symptoms_time)
@@ -63,6 +66,8 @@ function save_daily_trajectories(dict, state::MocosSim.SimState, params::MocosSi
 
   dict["daily_infections"] = daily(filter(!ismissing, infection_times), max_days)
   dict["daily_detections"] = daily(filter(!ismissing, cb.detection_times), max_days)
+  dict["daily_infections_non_asymptomatic"] = daily(filter(!ismissing, infection_times .* non_asymptomatic), max_days)
+  dict["daily_detections_non_asymptomatic"] = daily(filter(!ismissing, cb.detection_times .* non_asymptomatic), max_days)
   dict["daily_deaths"] = daily(filter(!ismissing, infection_times.+death_progressions), max_days)
   dict["daily_hospitalizations"] = daily(filter(!ismissing, infection_times.+hospitalization_progressions), max_days)
   dict["daily_hospital_releases"] = daily(filter(!ismissing, infection_times.+hospital_release_progressions), max_days)
