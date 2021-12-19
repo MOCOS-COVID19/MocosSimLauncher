@@ -1,6 +1,6 @@
 {
   "num_trajectories" : 10,
-  "population_path" : "example/dolnoslaskie_population.jld2",
+  "population_path" : "example/saxony_population_v3.jld2",
   "detection_mild_proba" : 0.3,
   "contact_tracking": {
     "probability" : 0.5,
@@ -13,7 +13,7 @@
     "constant": 1.35,
     "hospital": 0.0,
 
-    "age_coupling_data_path": "example/contact_mat_pol.jld2",
+    "age_coupling_data_path": "example/COVIMOD_Wave_4.jld2",
     "age_coupling_param": 1.35,
 
     "british_strain_multiplier": 1.5,
@@ -23,6 +23,7 @@
     "thresholds" : [0, 12, 18, 60],
     "probs" : [0.0, 0.36, 0.62, 0.80]
   },
+  "ifr" : 1.0,
   "imported_cases" : [
     {
       "function" : "ParabolicOutsideCases",

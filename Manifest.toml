@@ -220,9 +220,9 @@ uuid = "a63ad114-7e13-5084-954f-fe012c677804"
 
 [[MocosSim]]
 deps = ["DataFrames", "DataStructures", "Distributions", "FixedPointNumbers", "LinearAlgebra", "Random", "SaferIntegers", "Setfield", "SortingAlgorithms", "StaticArrays"]
-git-tree-sha1 = "478867d9ace67571ef708385c8f030f21e4a914f"
-repo-rev = "ridzikowski/omicron-sax-vacc-lvl"
-repo-url = "https://github.com/MOCOS-COVID19/MocosSim"
+git-tree-sha1 = "3cfaf09ab25626eef0bdc67dcf50dfa44151ee3b"
+repo-rev = "ridzikowski/omicron-sax-vacc-lvl-omicron-vax-perfect-immunity"
+repo-url = "https://github.com/MOCOS-COVID19/MocosSim.git"
 uuid = "af72bc66-7bc2-4ee8-90df-e21de508fcd7"
 version = "0.3.7"
 
