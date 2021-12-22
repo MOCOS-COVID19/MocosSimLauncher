@@ -220,7 +220,7 @@ uuid = "a63ad114-7e13-5084-954f-fe012c677804"
 
 [[MocosSim]]
 deps = ["DataFrames", "DataStructures", "Distributions", "FixedPointNumbers", "LinearAlgebra", "Random", "SaferIntegers", "Setfield", "SortingAlgorithms", "StaticArrays"]
-git-tree-sha1 = "77a8fca797d378a4a5353c99515ea034f853f92c"
+git-tree-sha1 = "2198c7c27fad3ad255139d455940f4f8950aa20a"
 repo-rev = "mbodych/omicron-enabled-with-omicron-vax-realistic-immunities"
 repo-url = "https://github.com/MOCOS-COVID19/MocosSim.git"
 uuid = "af72bc66-7bc2-4ee8-90df-e21de508fcd7"
