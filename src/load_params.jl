@@ -55,7 +55,8 @@ function read_params(json, rng::AbstractRNG)
   vacc = get(json, "vacc", nothing)
   age_vaccination_thresholds = isnothing(vacc) ? Int[0, 12, 18, 60] : json["vacc"]["thresholds"] |> Vector{Int}
   vaccination_uptakes_probs_age =  isnothing(vacc) ? Float32[0.0, 0.36, 0.62, 0.80] : json["vacc"]["probs"] |> Vector{Float32}
-  
+  booster_probs_age = isnothing(vacc) ? Float32[0.0, 0.0, 0.0, 0.0] : json["vacc"]["booster"] |> Vector{Float32}
+
   ifr = get(json, "ifr", 1.0) |> float
 
   MocosSim.load_params(
@@ -99,6 +100,7 @@ function read_params(json, rng::AbstractRNG)
     delta_strain_multiplier=delta_strain_multiplier,
     age_vaccination_thresholds = age_vaccination_thresholds,
     vaccination_uptakes_probs_age = vaccination_uptakes_probs_age,
+    booster_probs_age = booster_probs_age,
     ifr = ifr
   )
 end
