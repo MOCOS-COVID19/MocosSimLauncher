@@ -56,9 +56,13 @@ function read_params(json, rng::AbstractRNG)
   age_vaccination_thresholds = isnothing(vacc) ? Int[0, 12, 18, 60] : json["vacc"]["thresholds"] |> Vector{Int}
   vaccination_uptakes_probs_age =  isnothing(vacc) ? Float32[0.0, 0.36, 0.62, 0.80] : json["vacc"]["probs"] |> Vector{Float32}
   booster_probs_age = isnothing(vacc) ? Float32[0.0, 0.0, 0.0, 0.0] : json["vacc"]["booster"] |> Vector{Float32}
-
   ifr = get(json, "ifr", 1.0) |> float
 
+  vaccination_effectiveness = isnothing(vacc) ? Float32[0.0, 0.33, 0.875, 0.92] : json["vacc"]["vacc_eff"] |> Vector{Float32}
+  booster_effectiveness = isnothing(vacc) ? Float32[0.0, 0.33, 0.875, 0.92] : json["vacc"]["booster_eff"] |> Vector{Float32}
+  previously_infected_effectiveness = isnothing(vacc) ? Float32[0.0, 0.33, 0.875, 0.92] : json["vacc"]["prev_infected_eff"] |> Vector{Float32}
+  previously_infected_prob = isnothing(vacc) ? 0.0 : json["vacc"]["prev_infected_prob"] |> Float32
+  @assert length(vaccination_effectiveness) == length(booster_effectiveness) == length(previously_infected_effectiveness) == 4
   MocosSim.load_params(
     rng;
     population = individuals_df,
@@ -101,6 +105,10 @@ function read_params(json, rng::AbstractRNG)
     age_vaccination_thresholds = age_vaccination_thresholds,
     vaccination_uptakes_probs_age = vaccination_uptakes_probs_age,
     booster_probs_age = booster_probs_age,
-    ifr = ifr
+    ifr = ifr,
+    vaccination_effectiveness = vaccination_effectiveness,
+    booster_effectiveness = booster_effectiveness,
+    previously_infected_effectiveness =  previously_infected_effectiveness,
+    previously_infected_prob = previously_infected_prob
   )
 end

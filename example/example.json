@@ -22,7 +22,11 @@
   "vacc" : {
     "thresholds" : [0, 12, 18, 60],
     "probs" : [0.0, 0.36, 0.62, 0.80],
-    "booster" : [0.0, 0.0, 0.50, 0.50]
+    "booster" : [0.0, 0.0, 0.50, 0.50],
+    "vacc_eff" : [0.0, 0.33, 0.875, 0.92],
+    "booster_eff" : [0.0, 0.80, 0.875, 0.92],
+    "prev_infected_eff" : [0.0, 0.80, 0.875, 0.92],
+    "prev_infected_prob" : 0.1
   },
   "ifr" : 1.0,
   "imported_cases" : [
