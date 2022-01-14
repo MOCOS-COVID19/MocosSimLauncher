@@ -1,71 +1,35 @@
 {
   "num_trajectories" : 10,
-  "population_path" : "example/dolnoslaskie_population.jld2",
-  "mild_detection_prob" : 0.3,
+  "population_path" : "../poland_v3.jld2",
+  "mild_detection_prob" : 0.0,
   "mild_detection_delay" : 2.0,
   "contact_tracing": {
-    "probability" : 0.5,
+    "probability" : 0.3,
     "detection_delay" : 1.75,
     "testing_time" : 0.25
   },
   "transmission_probabilities": {
-    "household": 0.01,
-    "constant": 1.35,
+    "household": 0.02,
+    "constant": 0.0,
     "hospital": 0.0,
-
-    "age_coupling_data_path": "example/contact_mat_pol.jld2",
-    "age_coupling_param": 1.35,
-
-    "british_strain_multiplier": 1.5,
-    "delta_strain_multiplier": 2.25
+    "age_coupling_param": 0.0,
+    "age_coupling_data_path": "../contact_mat_pol.jld2",
+    "delta_strain_multiplier": 5.1
   },
   "imported_cases" : [
-    {
-      "function" : "ParabolicOutsideCases",
-      "params" : {
-        "days" : 30,
-        "peak" : 20,
-        "height" : 0.8,
-        "minimum" : 0.01,
-        "frequency" : 0.02,
-        "strain" : "Delta"
-      }
-    },
     {
       "function" : "InstantOutsideCases",
       "params" : {
         "num_infections" : 100,
         "import_time" : 0.0,
-        "strain" : "Chinese"
+        "strain" : "Omicron"
       }
     }
   ],
-  "screening" : {
-    "start_time" : 20,
-    "precision" : 0.8,
-    "period" : 7.0,
-    "lower_bound_age" : 8,
-    "upper_bound_age" : 16
-  },
-  "infection_modulation":{
-    "function" : "TanhModulation",
-    "params" : {
-      "scale": 2000,
-      "loc": 500,
-      "weight_detected": 1,
-      "weight_deaths": 0,
-      "limit_value": 1.0
-    }
-  },
-  "spreading" : {
-    "alpha" : 3,
-    "x0" : 1,
-    "truncation" : 100
-  },
   "initial_conditions": {
     "immunization": {
-      "order_data": "example/dolnoslaskie-immunization.jld2",
-      "level": 0.1
+      "order_data": "../poland_v3-immunization-order.jld2",
+      "level": 0.65
     }
   },
   "phone_tracing": {
@@ -77,6 +41,6 @@
     "probability": 0.8,
     "delay": 1.0
   },
-  "stop_simulation_threshold": 1000000,
-  "stop_simulation_time" : 100
+  "stop_simulation_threshold": 40000000,
+ "stop_simulation_time": 200
 }
