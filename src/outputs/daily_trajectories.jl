@@ -59,7 +59,7 @@ function save_daily_trajectories(dict, state::MocosSim.SimState, params::MocosSi
   recovery_progressions = getproperty.(state.progressions, :recovery_time)
   death_progressions = getproperty.(state.progressions, :death_time)
   release_progressions = coalesce.(recovery_progressions, death_progressions)
-  hospital_release_progressions = ifelse.(ismissing.(hospitalization_progressions), missing,  release_progressions)
+  hospital_release_progressions = (hospitalization_progressions .- hospitalization_progressions) .+ release_progressions
 
   dict["daily_infections"] = daily(filter(!ismissing, infection_times), max_days)
   dict["daily_detections"] = daily(filter(!ismissing, cb.detection_times), max_days)
