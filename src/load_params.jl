@@ -61,7 +61,7 @@ function read_params(json, rng::AbstractRNG)
   vaccination_effectiveness = isnothing(vacc) ? Float32[0.0, 0.33, 0.875, 0.92] : json["vacc"]["vacc_eff"] |> Vector{Float32}
   booster_effectiveness = isnothing(vacc) ? Float32[0.0, 0.33, 0.875, 0.92] : json["vacc"]["booster_eff"] |> Vector{Float32}
   previously_infected_effectiveness = isnothing(vacc) ? Float32[0.0, 0.33, 0.875, 0.92] : json["vacc"]["prev_infected_eff"] |> Vector{Float32}
-  previously_infected_prob = isnothing(vacc) ? 0.0 : json["vacc"]["prev_infected_prob"] |> Float32
+  previously_infected_prob = isnothing(vacc) ? Float32[0.0, 0.24, 0.24, 0.24] : json["vacc"]["prev_infected_prob"] |> Vector{Float32}
   @assert length(vaccination_effectiveness) == length(booster_effectiveness) == length(previously_infected_effectiveness) == 4
   MocosSim.load_params(
     rng;
