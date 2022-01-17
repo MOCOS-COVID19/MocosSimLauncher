@@ -64,10 +64,19 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
 
   immunization = nothing
   immune = nothing
+  immune_ages = nothing
   if haskey(config, "initial_conditions")
     initial_conditions = config["initial_conditions"]
     if haskey(initial_conditions, "immunization")
       immunization_cfg = initial_conditions["immunization"]
+
+      if haskey(immunization_cfg, "age_groups")
+        immunization_thresholds = get(immunization_cfg["age_groups"], "immunization_thresholds", [0, 12, 18, 60]) |> Vector{Int32}
+        immunization_tables = get(immunization_cfg["age_groups"], "immunization_tables", [0.0, 0.0, 39.0, 3.85, 64.0, 28.8, 80.0, 52.13]) |> Vector{Float32}
+        immunization_tables = reshape(immunization_tables, 2,length(immunization_thresholds))' |> Matrix{Float32}
+        immunization_previously_infected = get(immunization_cfg["age_groups"], "immunization_previously_infected", [0.24, 0.24, 0.24, 0.24]) |> Vector{Float32}
+        immune_ages = [immunization_thresholds, immunization_tables, immunization_previously_infected]
+      end
 
       if haskey(immunization_cfg, "order_file")
         immunization = load(immunization_cfg["order_file"], "immunization")::MocosSim.Immunization
@@ -126,6 +135,10 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
     end
     if params.screening_params !== nothing
       MocosSim.add_screening!(state, params)
+    end
+
+    if immune_ages !== nothing
+      MocosSim.immunize!(state, params, immune_ages[1], immune_ages[2], immune_ages[3])
     end
 
     if immune !== nothing

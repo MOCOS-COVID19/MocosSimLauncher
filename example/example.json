@@ -1,6 +1,6 @@
 {
   "num_trajectories" : 10,
-  "population_path" : "../poland_v3.jld2",
+  "population_path" : "../saxony_population_v3.jld2",
   "mild_detection_prob" : 0.0,
   "mild_detection_delay" : 2.0,
   "contact_tracing": {
@@ -13,7 +13,7 @@
     "constant": 0.0,
     "hospital": 0.0,
     "age_coupling_param": 0.0,
-    "age_coupling_data_path": "../contact_mat_pol.jld2",
+    "age_coupling_data_path": "../COVIMOD_Wave_4.jld2",
     "delta_strain_multiplier": 5.1
   },
   "imported_cases" : [
@@ -27,9 +27,12 @@
     }
   ],
   "initial_conditions": {
-    "immunization": {
-      "order_data": "../poland_v3-immunization-order.jld2",
-      "level": 0.65
+    "immunization" : {
+      "age_groups" : {
+        "immunization_thresholds" : [0, 12, 18, 60],
+        "immunization_tables" : [0.0, 0.0, 0.39, 0.0385, 0.64, 0.288, 0.80, 0.13],
+        "immunization_previously_infected"  : [0.24, 0.24, 0.24, 0.24] 
+      }
     }
   },
   "phone_tracing": {
