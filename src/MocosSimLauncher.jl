@@ -72,8 +72,9 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
 
       if haskey(immunization_cfg, "age_groups")
         immunization_thresholds = get(immunization_cfg["age_groups"], "immunization_thresholds", [0, 12, 18, 60]) |> Vector{Int32}
-        immunization_tables = get(immunization_cfg["age_groups"], "immunization_tables", [0.0, 0.0, 39.0, 3.85, 64.0, 28.8, 80.0, 52.13]) |> Vector{Float32}
-        immunization_tables = reshape(immunization_tables, 2,length(immunization_thresholds))' |> Matrix{Float32}
+        immunization_levels = get(immunization_cfg["age_groups"], "immunization_levels", [0.0, 0.39, 0.64, 0.80]) |> Vector{Float32}
+        immunization_booster = get(immunization_cfg["age_groups"], "immunization_booster", [0.0, 0.0385, 0.288, 0.13]) |> Vector{Float32}
+        immunization_tables = hcat(immunization_levels,immunization_booster) |> Matrix{Float32}
         immunization_previously_infected = get(immunization_cfg["age_groups"], "immunization_previously_infected", [0.24, 0.24, 0.24, 0.24]) |> Vector{Float32}
         immune_ages = [immunization_thresholds, immunization_tables, immunization_previously_infected]
       end

@@ -30,7 +30,8 @@
     "immunization" : {
       "age_groups" : {
         "immunization_thresholds" : [0, 12, 18, 60],
-        "immunization_tables" : [0.0, 0.0, 0.39, 0.0385, 0.64, 0.288, 0.80, 0.13],
+        "immunization_levels" : [0.0, 0.39, 0.64, 0.80],
+        "immunization_booster" : [0.0, 0.0385, 0.288, 0.13],
         "immunization_previously_infected"  : [0.24, 0.24, 0.24, 0.24] 
       }
     }
