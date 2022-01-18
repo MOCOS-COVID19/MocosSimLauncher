@@ -15,7 +15,21 @@ function read_params(config, rng::AbstractRNG)
   population_path::AbstractString # checks if it was indeed a string
   individuals_df = load(population_path)["individuals_df"]
 
-  progression_params = MocosSim.make_progression_params()
+  effectiveness_table = if !haskey(config["initial_conditions"]["immunization"]["age_groups"], "effectiveness")
+      Float64[0.0 0.0 0.0 0.0]
+    else
+      effect = config["initial_conditions"]["immunization"]["age_groups"]["effectiveness"]
+      no_immunity = get(effect, "no_immunity", Float64[0.0, 0.0, 0.0, 0.0]) |> Vector{Float64}
+      prev_infected = get(effect, "prev_infected", no_immunity) |> Vector{Float64}
+      vacc = get(effect, "vacc", Float64[0.0, 0.0, 0.0, 0.0]) |> Vector{Float64}
+      vacc_infected = get(effect, "vacc_infected", vacc) |> Vector{Float64}
+      boost = get(effect, "boost", Float64[0.0, 0.0, 0.0, 0.0]) |> Vector{Float64}
+      boost_infected = get(effect, "boost_infected", boost) |> Vector{Float64}
+      vcat(no_immunity', prev_infected', vacc', vacc_infected', boost', boost_infected') 
+    end
+  hospitalization_ratio = get(config["initial_conditions"], "hospitalization_ratio", 1.0) |> float
+
+  progression_params = MocosSim.make_progression_params(effectiveness_table, hospitalization_ratio)
 
   infection_modulation = get(config, "infection_modulation", nothing) |> create_modulation
   mild_detection_modulation = get(config, "mild_detection_modulation", nothing) |> create_modulation
