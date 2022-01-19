@@ -31,16 +31,16 @@
     "immunization" : {
       "age_groups" : {
         "immunization_thresholds" : [0, 12, 18, 60],
-        "immunization_levels" : [0.0, 0.39, 0.64, 0.80],
-        "immunization_booster" : [0.0, 0.0385, 0.288, 0.13],
-        "immunization_previously_infected"  : [0.24, 0.24, 0.24, 0.24],
+        "immunization_levels" : [0.0, 0.35, 0.64, 0.81],
+        "immunization_booster" : [0.0, 0.05, 0.31, 0.55],
+        "immunization_previously_infected"  : [0.30, 0.30, 0.30],
         "effectiveness" :{
-          "no_immunity" : [0.0, 0.40, 0.875, 0.5],
-          "prev_infected" : [0.0, 0.40, 0.875, 0.5],
+          "no_immunity" : [0.0, 0.0, 0.0, 0.0],
+          "prev_infected" : [0.0, 0.75, 0.875, 0.80],
           "vacc" : [0.0, 0.33, 0.875, 0.92],
-          "vacc_infected" : [0.0, 0.33, 0.875, 0.92],
+          "vacc_infected" : [0.0, 0.60, 0.98, 0.9],
           "boost" : [0.0, 0.80, 0.875, 0.92],
-          "boost_infected" : [0.0, 0.80, 0.875, 0.92]
+          "boost_infected" : [0.0, 0.88, 0.98, 0.96]
         }
       }
     }
