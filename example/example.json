@@ -28,6 +28,8 @@
   ],
   "initial_conditions": {
     "hospitalization_ratio" : 0.5,
+    "hospitalization_multiplier" : 0.5,
+    "death_multiplier" : 0.5,
     "immunization" : {
       "age_groups" : {
         "immunization_thresholds" : [0, 12, 18, 60],

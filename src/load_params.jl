@@ -27,9 +27,11 @@ function read_params(config, rng::AbstractRNG)
       boost_infected = get(effect, "boost_infected", boost) |> Vector{Float64}
       vcat(no_immunity', prev_infected', vacc', vacc_infected', boost', boost_infected') 
     end
-  hospitalization_ratio = get(config["initial_conditions"], "hospitalization_ratio", 1.0) |> float
+  hospitalization_ratio = get(config["initial_conditions"], "hospitalization_ratio", 1.0) |> Float64
+  hospitalization_multiplier = get(config["initial_conditions"], "hospitalization_multiplier", 1.0) |> Float64
+  death_multiplier = get(config["initial_conditions"], "death_multiplier", 1.0) |> Float64
 
-  progression_params = MocosSim.make_progression_params(effectiveness_table, hospitalization_ratio)
+  progression_params = MocosSim.make_progression_params(effectiveness_table, hospitalization_ratio, hospitalization_multiplier, death_multiplier)
 
   infection_modulation = get(config, "infection_modulation", nothing) |> create_modulation
   mild_detection_modulation = get(config, "mild_detection_modulation", nothing) |> create_modulation
