@@ -26,7 +26,7 @@
     "vacc_eff" : [0.0, 0.33, 0.875, 0.92],
     "booster_eff" : [0.0, 0.80, 0.875, 0.92],
     "prev_infected_eff" : [0.0, 0.80, 0.875, 0.92],
-    "prev_infected_prob" : 0.1
+    "prev_infected_prob" : [0.3, 0.3, 0.3, 0.3]
   },
   "ifr" : 1.0,
   "imported_cases" : [
@@ -73,6 +73,9 @@
     "truncation" : 100
   },
   "initial_conditions": {
+    "hospitalization_ratio" : 0.8,
+    "hospitalization_multiplier" : 0.5,
+    "death_multiplier" : 0.5,
     "cardinalities": {
       "infectious": 100
     }

@@ -63,6 +63,10 @@ function read_params(json, rng::AbstractRNG)
   previously_infected_effectiveness = isnothing(vacc) ? Float32[0.0, 0.33, 0.875, 0.92] : json["vacc"]["prev_infected_eff"] |> Vector{Float32}
   previously_infected_prob = isnothing(vacc) ? Float32[0.0, 0.24, 0.24, 0.24] : json["vacc"]["prev_infected_prob"] |> Vector{Float32}
   @assert length(vaccination_effectiveness) == length(booster_effectiveness) == length(previously_infected_effectiveness) == 4
+
+  hospitalization_ratio = get(json["initial_conditions"], "hospitalization_ratio", 1.0) |> Float64
+  hospitalization_multiplier = get(json["initial_conditions"], "hospitalization_multiplier", 1.0) |> Float64
+  death_multiplier = get(json["initial_conditions"], "death_multiplier", 1.0) |> Float64
   MocosSim.load_params(
     rng;
     population = individuals_df,
@@ -109,6 +113,10 @@ function read_params(json, rng::AbstractRNG)
     vaccination_effectiveness = vaccination_effectiveness,
     booster_effectiveness = booster_effectiveness,
     previously_infected_effectiveness =  previously_infected_effectiveness,
-    previously_infected_prob = previously_infected_prob
+    previously_infected_prob = previously_infected_prob,
+
+    hospitalization_multiplier = hospitalization_multiplier, 
+    death_multiplier=death_multiplier,
+    hospitalization_time_ratio = hospitalization_ratio
   )
 end
