@@ -1,20 +1,20 @@
 {
   "num_trajectories" : 10,
   "population_path" : "../saxony_population_v3.jld2",
-  "mild_detection_prob" : 0.0,
+  "mild_detection_prob" : 0.5,
   "mild_detection_delay" : 2.0,
   "contact_tracing": {
-    "probability" : 0.3,
+    "probability": 0.3,
     "detection_delay" : 1.75,
     "testing_time" : 0.25
   },
   "transmission_probabilities": {
     "household": 0.02,
-    "constant": 0.0,
+    "constant":  0.0,
     "hospital": 0.0,
-    "age_coupling_param": 0.0,
+    "age_coupling_param": 0.37125,
     "age_coupling_data_path": "../COVIMOD_Wave_4.jld2",
-    "delta_strain_multiplier": 5.1
+    "omicron_multiplier": 5.1
   },
   "imported_cases" : [
     {
@@ -27,9 +27,9 @@
     }
   ],
   "initial_conditions": {
-    "hospitalization_ratio" : 0.5,
+    "hospitalization_ratio" : 0.6,
     "hospitalization_multiplier" : 0.5,
-    "death_multiplier" : 0.5,
+    "death_multiplier" : 2.7,
     "immunization" : {
       "age_groups" : {
         "immunization_thresholds" : [0, 12, 18, 60],
@@ -38,14 +38,21 @@
         "immunization_previously_infected"  : [0.30, 0.30, 0.30],
         "effectiveness" :{
           "no_immunity" : [0.0, 0.0, 0.0, 0.0],
-          "prev_infected" : [0.0, 0.75, 0.875, 0.80],
-          "vacc" : [0.0, 0.33, 0.875, 0.92],
-          "vacc_infected" : [0.0, 0.60, 0.98, 0.9],
-          "boost" : [0.0, 0.80, 0.875, 0.92],
-          "boost_infected" : [0.0, 0.88, 0.98, 0.96]
+          "prev_infected" : [0.0, 0.3, 0.5, 0.5],
+          "vacc" : [0.0, 0.0, 0.82, 0.82],
+          "vacc_infected" : [0.0, 0.50, 0.91, 0.91],
+          "boost" : [0.0, 0.50, 0.875, 0.92],
+          "boost_infected" : [0.0, 0.50, 0.9375, 0.96]
         }
       }
     }
+  },
+  "screening" : {
+    "start_time" : 0,
+    "precision" : 0.5,
+    "period" : 3.5,
+    "lower_bound_age" : 8,
+    "upper_bound_age" : 16
   },
   "phone_tracing": {
     "usage" : 0.03,

@@ -47,14 +47,19 @@ function save_daily_trajectories(dict, state::MocosSim.SimState, params::MocosSi
 
   infection_times = Vector{OptTimePoint}(missing, num_individuals)
   contact_kinds = Vector{MocosSim.ContactKind}(undef, num_individuals)
-
+  infections_immunity_kind = zeros(Int, 6, max_days + 1)
   for i in 1:num_individuals
     event = MocosSim.backwardinfection(state, i)
     kind = contactkind(event)
     contact_kinds[i] = kind
     infection_times[i] = ifelse(kind == MocosSim.NoContact, missing, time(event))
+    if infection_times[i] !== missing
+      immunity_int = state.individuals[i].immunity |> UInt8
+      time_int = infection_times[i] + 1 |> floor |> Int
+      infections_immunity_kind[immunity_int,time_int] += 1
+    end
   end
-
+  #println(infections_immunity_kind[1,:])
   hospitalization_progressions = getproperty.(state.progressions, :severe_symptoms_time)
   recovery_progressions = getproperty.(state.progressions, :recovery_time)
   death_progressions = getproperty.(state.progressions, :death_time)
@@ -66,9 +71,15 @@ function save_daily_trajectories(dict, state::MocosSim.SimState, params::MocosSi
   dict["daily_deaths"] = daily(filter(!ismissing, infection_times.+death_progressions), max_days)
   dict["daily_hospitalizations"] = daily(filter(!ismissing, infection_times.+hospitalization_progressions), max_days)
   dict["daily_hospital_releases"] = daily(filter(!ismissing, infection_times.+hospital_release_progressions), max_days)
-  for kind in instances(ContactKind)
+  for kind in instances(MocosSim.ContactKind)
     if kind != NoContact
       dict["daily_" * lowercase(string(kind))] = daily(infection_times[contact_kinds.==Int(kind)], max_days)
+    end
+  end
+  for immunity in instances(MocosSim.ImmunityState)
+    if immunity !== MocosSim.NullImmunity
+      immunity_int = immunity |> UInt8
+      dict["daily_infections_" * lowercase(string(immunity))] = infections_immunity_kind[immunity_int,:]
     end
   end
 end
