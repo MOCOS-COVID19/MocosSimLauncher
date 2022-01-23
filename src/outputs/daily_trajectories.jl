@@ -48,23 +48,30 @@ function save_daily_trajectories(dict, state::MocosSim.SimState, params::MocosSi
   infection_times = Vector{OptTimePoint}(missing, num_individuals)
   contact_kinds = Vector{MocosSim.ContactKind}(undef, num_individuals)
   infections_immunity_kind = zeros(Int, 6, max_days + 1)
+  death_immunity_kind = zeros(Int, 6, max_days + 1)
   for i in 1:num_individuals
     event = MocosSim.backwardinfection(state, i)
     kind = contactkind(event)
     contact_kinds[i] = kind
     infection_times[i] = ifelse(kind == MocosSim.NoContact, missing, time(event))
-    if infection_times[i] !== missing
-      immunity_int = state.individuals[i].immunity |> UInt8
-      time_int = infection_times[i] + 1 |> floor |> Int
-      infections_immunity_kind[immunity_int,time_int] += 1
-    end
   end
-  #println(infections_immunity_kind[1,:])
   hospitalization_progressions = getproperty.(state.progressions, :severe_symptoms_time)
   recovery_progressions = getproperty.(state.progressions, :recovery_time)
   death_progressions = getproperty.(state.progressions, :death_time)
   release_progressions = coalesce.(recovery_progressions, death_progressions)
   hospital_release_progressions = (hospitalization_progressions .- hospitalization_progressions) .+ release_progressions
+  for i in 1:num_individuals
+    if infection_times[i] !== missing
+      immunity_int = state.individuals[i].immunity |> UInt8
+      time_int = infection_times[i] + 1 |> floor |> Int
+      infections_immunity_kind[immunity_int,time_int] += 1
+    end
+    if death_progressions[i] !== missing && death_progressions[i] <= max_days
+      immunity_int = state.individuals[i].immunity |> UInt8
+      time_int = death_progressions[i] + 1 |> floor |> Int
+      death_immunity_kind[immunity_int,time_int] += 1
+    end
+  end
 
   dict["daily_infections"] = daily(filter(!ismissing, infection_times), max_days)
   dict["daily_detections"] = daily(filter(!ismissing, cb.detection_times), max_days)
@@ -80,6 +87,7 @@ function save_daily_trajectories(dict, state::MocosSim.SimState, params::MocosSi
     if immunity !== MocosSim.NullImmunity
       immunity_int = immunity |> UInt8
       dict["daily_infections_" * lowercase(string(immunity))] = infections_immunity_kind[immunity_int,:]
+      dict["daily_death_" * lowercase(string(immunity))] = death_immunity_kind[immunity_int,:]
     end
   end
 end
