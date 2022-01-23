@@ -49,6 +49,8 @@ function save_daily_trajectories(dict, state::MocosSim.SimState, params::MocosSi
   contact_kinds = Vector{MocosSim.ContactKind}(undef, num_individuals)
   infections_immunity_kind = zeros(Int, 6, max_days + 1)
   death_immunity_kind = zeros(Int, 6, max_days + 1)
+  hospitalization_immunity_kind = zeros(Int, 6, max_days + 1)
+  hospitalization_release_immunity_kind = zeros(Int, 6, max_days + 1)
   for i in 1:num_individuals
     event = MocosSim.backwardinfection(state, i)
     kind = contactkind(event)
@@ -61,18 +63,27 @@ function save_daily_trajectories(dict, state::MocosSim.SimState, params::MocosSi
   release_progressions = coalesce.(recovery_progressions, death_progressions)
   hospital_release_progressions = (hospitalization_progressions .- hospitalization_progressions) .+ release_progressions
   for i in 1:num_individuals
-    if infection_times[i] !== missing
+    if infection_times[i] !== missing && infection_times[i] <= max_days
       immunity_int = state.individuals[i].immunity |> UInt8
       time_int = infection_times[i] + 1 |> floor |> Int
       infections_immunity_kind[immunity_int,time_int] += 1
     end
-    if death_progressions[i] !== missing && death_progressions[i] <= max_days
+    if death_progressions[i] !== missing && infection_times[i] + death_progressions[i] <= max_days
       immunity_int = state.individuals[i].immunity |> UInt8
-      time_int = death_progressions[i] + 1 |> floor |> Int
+      time_int = infection_times[i] + death_progressions[i] + 1 |> floor |> Int
       death_immunity_kind[immunity_int,time_int] += 1
     end
+    if hospitalization_progressions[i] !== missing && infection_times[i] +  hospitalization_progressions[i] <= max_days
+      immunity_int = state.individuals[i].immunity |> UInt8
+      time_int = infection_times[i] + hospitalization_progressions[i] + 1 |> floor |> Int
+      hospitalization_immunity_kind[immunity_int,time_int] += 1
+    end
+    if hospital_release_progressions[i] !== missing && infection_times[i] +  hospital_release_progressions[i] <= max_days
+      immunity_int = state.individuals[i].immunity |> UInt8
+      time_int = infection_times[i] + hospital_release_progressions[i] + 1 |> floor |> Int
+      hospitalization_release_immunity_kind[immunity_int,time_int] += 1
+    end
   end
-
   dict["daily_infections"] = daily(filter(!ismissing, infection_times), max_days)
   dict["daily_detections"] = daily(filter(!ismissing, cb.detection_times), max_days)
   dict["daily_deaths"] = daily(filter(!ismissing, infection_times.+death_progressions), max_days)
@@ -88,6 +99,8 @@ function save_daily_trajectories(dict, state::MocosSim.SimState, params::MocosSi
       immunity_int = immunity |> UInt8
       dict["daily_infections_" * lowercase(string(immunity))] = infections_immunity_kind[immunity_int,:]
       dict["daily_death_" * lowercase(string(immunity))] = death_immunity_kind[immunity_int,:]
+      dict["daily_hospitalizations_" * lowercase(string(immunity))] = hospitalization_immunity_kind[immunity_int,:]
+      dict["daily_hospital_releases_" * lowercase(string(immunity))] = hospitalization_release_immunity_kind[immunity_int,:]
     end
   end
 end
