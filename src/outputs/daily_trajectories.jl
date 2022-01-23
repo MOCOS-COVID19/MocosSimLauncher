@@ -47,6 +47,8 @@ function save_daily_trajectories(dict, state::MocosSim.SimState, params::MocosSi
 
   infection_times = Vector{OptTimePoint}(missing, num_individuals)
   contact_kinds = Vector{MocosSim.ContactKind}(undef, num_individuals)
+  non_asymptomatic = Vector{OptTimePoint}(missing, num_individuals)
+
   infections_immunity_kind = zeros(Int, 6, max_days + 1)
   death_immunity_kind = zeros(Int, 6, max_days + 1)
   hospitalization_immunity_kind = zeros(Int, 6, max_days + 1)
@@ -56,6 +58,8 @@ function save_daily_trajectories(dict, state::MocosSim.SimState, params::MocosSi
     kind = contactkind(event)
     contact_kinds[i] = kind
     infection_times[i] = ifelse(kind == MocosSim.NoContact, missing, time(event))
+    severity = MocosSim.severityof(params, i)
+    non_asymptomatic[i] = ifelse(severity == MocosSim.Asymptomatic, missing, 1.0)
   end
   hospitalization_progressions = getproperty.(state.progressions, :severe_symptoms_time)
   recovery_progressions = getproperty.(state.progressions, :recovery_time)
@@ -63,32 +67,34 @@ function save_daily_trajectories(dict, state::MocosSim.SimState, params::MocosSi
   release_progressions = coalesce.(recovery_progressions, death_progressions)
   hospital_release_progressions = (hospitalization_progressions .- hospitalization_progressions) .+ release_progressions
   for i in 1:num_individuals
-    if infection_times[i] !== missing && infection_times[i] <= max_days
-      immunity_int = state.individuals[i].immunity |> UInt8
-      time_int = infection_times[i] + 1 |> floor |> Int
-      infections_immunity_kind[immunity_int,time_int] += 1
-    end
-    if death_progressions[i] !== missing && infection_times[i] + death_progressions[i] <= max_days
-      immunity_int = state.individuals[i].immunity |> UInt8
-      time_int = infection_times[i] + death_progressions[i] + 1 |> floor |> Int
-      death_immunity_kind[immunity_int,time_int] += 1
-    end
-    if hospitalization_progressions[i] !== missing && infection_times[i] +  hospitalization_progressions[i] <= max_days
-      immunity_int = state.individuals[i].immunity |> UInt8
-      time_int = infection_times[i] + hospitalization_progressions[i] + 1 |> floor |> Int
-      hospitalization_immunity_kind[immunity_int,time_int] += 1
-    end
-    if hospital_release_progressions[i] !== missing && infection_times[i] +  hospital_release_progressions[i] <= max_days
-      immunity_int = state.individuals[i].immunity |> UInt8
-      time_int = infection_times[i] + hospital_release_progressions[i] + 1 |> floor |> Int
-      hospitalization_release_immunity_kind[immunity_int,time_int] += 1
+    if non_asymptomatic[i] == 1.0
+      if infection_times[i] !== missing && infection_times[i] <= max_days
+        immunity_int = state.individuals[i].immunity |> UInt8
+        time_int = infection_times[i] + 1 |> floor |> Int
+        infections_immunity_kind[immunity_int,time_int] += 1
+      end
+      if death_progressions[i] !== missing && infection_times[i] + death_progressions[i] <= max_days
+        immunity_int = state.individuals[i].immunity |> UInt8
+        time_int = infection_times[i] + death_progressions[i] + 1 |> floor |> Int
+        death_immunity_kind[immunity_int,time_int] += 1
+      end
+      if hospitalization_progressions[i] !== missing && infection_times[i] +  hospitalization_progressions[i] <= max_days
+        immunity_int = state.individuals[i].immunity |> UInt8
+        time_int = infection_times[i] + hospitalization_progressions[i] + 1 |> floor |> Int
+        hospitalization_immunity_kind[immunity_int,time_int] += 1
+      end
+      if hospital_release_progressions[i] !== missing && infection_times[i] +  hospital_release_progressions[i] <= max_days
+        immunity_int = state.individuals[i].immunity |> UInt8
+        time_int = infection_times[i] + hospital_release_progressions[i] + 1 |> floor |> Int
+        hospitalization_release_immunity_kind[immunity_int,time_int] += 1
+      end
     end
   end
-  dict["daily_infections"] = daily(filter(!ismissing, infection_times), max_days)
-  dict["daily_detections"] = daily(filter(!ismissing, cb.detection_times), max_days)
+  dict["daily_infections"] = daily(filter(!ismissing, infection_times .* non_asymptomatic), max_days)
+  dict["daily_detections"] = daily(filter(!ismissing, cb.detection_times .* non_asymptomatic), max_days)
   dict["daily_deaths"] = daily(filter(!ismissing, infection_times.+death_progressions), max_days)
-  dict["daily_hospitalizations"] = daily(filter(!ismissing, infection_times.+hospitalization_progressions), max_days)
-  dict["daily_hospital_releases"] = daily(filter(!ismissing, infection_times.+hospital_release_progressions), max_days)
+  dict["daily_hospitalizations"] = daily(filter(!ismissing, (infection_times.+hospitalization_progressions) .* non_asymptomatic), max_days)
+  dict["daily_hospital_releases"] = daily(filter(!ismissing, (infection_times.+hospital_release_progressions) .* non_asymptomatic), max_days)
   for kind in instances(MocosSim.ContactKind)
     if kind != NoContact
       dict["daily_" * lowercase(string(kind))] = daily(infection_times[contact_kinds.==Int(kind)], max_days)
