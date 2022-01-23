@@ -58,7 +58,7 @@ function save_daily_trajectories(dict, state::MocosSim.SimState, params::MocosSi
     kind = contactkind(event)
     contact_kinds[i] = kind
     infection_times[i] = ifelse(kind == MocosSim.NoContact, missing, time(event))
-    severity = MocosSim.severityof(params, i)
+    severity = MocosSim.progressionof(params, i).severity
     non_asymptomatic[i] = ifelse(severity == MocosSim.Asymptomatic, missing, 1.0)
   end
   hospitalization_progressions = getproperty.(state.progressions, :severe_symptoms_time)
