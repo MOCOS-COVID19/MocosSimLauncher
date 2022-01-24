@@ -75,7 +75,8 @@ function read_params(config, rng::AbstractRNG)
 
   british_strain_multiplier = get(config["transmission_probabilities"], "british_strain_multiplier", 1.5) |> float
   delta_strain_multiplier = get(config["transmission_probabilities"], "delta_strain_multiplier", 1.5 * 1.5) |> float
-
+  omicron_strain_multiplier = get(config["transmission_probabilities"], "omicron_strain_multiplier", 5.1) |> float
+  @info omicron_strain_multiplier
   hospital_kernel_param = get(config["transmission_probabilities"], "hospital", 0.0) |> float
   healthcare_detection_prob, healthcare_detection_delay =  if !haskey(config, "healthare_detections")
     0.8, 1.0
@@ -124,8 +125,9 @@ function read_params(config, rng::AbstractRNG)
     phone_detection_delay = phone_tracing_testing_delay,
     phone_tracing_usage_by_household = phone_tracing_usage_by_household,
 
-    british_strain_multiplier=british_strain_multiplier,
-    delta_strain_multiplier=delta_strain_multiplier,
+    british_strain_multiplier = british_strain_multiplier,
+    delta_strain_multiplier = delta_strain_multiplier,
+    omicron_strain_multiplier = omicron_strain_multiplier,
 
     hospital_kernel_param = hospital_kernel_param,
     healthcare_detection_prob = healthcare_detection_prob,

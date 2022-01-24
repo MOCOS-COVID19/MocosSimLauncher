@@ -50,6 +50,7 @@ function save_daily_trajectories(dict, state::MocosSim.SimState, params::MocosSi
   non_asymptomatic = Vector{OptTimePoint}(missing, num_individuals)
 
   infections_immunity_kind = zeros(Int, 6, max_days + 1)
+  detections_immunity_kind = zeros(Int, 6, max_days + 1)
   death_immunity_kind = zeros(Int, 6, max_days + 1)
   hospitalization_immunity_kind = zeros(Int, 6, max_days + 1)
   hospitalization_release_immunity_kind = zeros(Int, 6, max_days + 1)
@@ -72,6 +73,10 @@ function save_daily_trajectories(dict, state::MocosSim.SimState, params::MocosSi
         immunity_int = state.individuals[i].immunity |> UInt8
         time_int = infection_times[i] + 1 |> floor |> Int
         infections_immunity_kind[immunity_int,time_int] += 1
+        if cb.detection_times[i] !== missing && cb.detection_times[i] <=max_days
+          time_int = cb.detection_times[i] + 1 |> floor |> Int
+          detections_immunity_kind[immunity_int,time_int] += 1
+        end
       end
       if death_progressions[i] !== missing && infection_times[i] + death_progressions[i] <= max_days
         immunity_int = state.individuals[i].immunity |> UInt8
@@ -104,6 +109,7 @@ function save_daily_trajectories(dict, state::MocosSim.SimState, params::MocosSi
     if immunity !== MocosSim.NullImmunity
       immunity_int = immunity |> UInt8
       dict["daily_infections_" * lowercase(string(immunity))] = infections_immunity_kind[immunity_int,:]
+      dict["daily_detections_" * lowercase(string(immunity))] = detections_immunity_kind[immunity_int,:]
       dict["daily_death_" * lowercase(string(immunity))] = death_immunity_kind[immunity_int,:]
       dict["daily_hospitalizations_" * lowercase(string(immunity))] = hospitalization_immunity_kind[immunity_int,:]
       dict["daily_hospital_releases_" * lowercase(string(immunity))] = hospitalization_release_immunity_kind[immunity_int,:]
