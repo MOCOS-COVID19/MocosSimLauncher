@@ -44,13 +44,17 @@ aftertrajectories(d::DailyTrajectories) = close(d.file)
 function save_daily_trajectories(dict, state::MocosSim.SimState, params::MocosSim.SimParams, cb::DetectionCallback)
   max_days = MocosSim.time(state) |> floor |> Int
   num_individuals = MocosSim.numindividuals(state)
-
+  #max_ages = maximum(params.ages)
+  thresholds = [0, 12, 18, 60]
+  num_agegroup = length(thresholds)
   infection_times = Vector{OptTimePoint}(missing, num_individuals)
   contact_kinds = Vector{MocosSim.ContactKind}(undef, num_individuals)
   non_asymptomatic = Vector{OptTimePoint}(missing, num_individuals)
 
   infections_immunity_kind = zeros(Int, 6, max_days + 1)
+  infections_ages = zeros(Int, num_agegroup, max_days + 1)
   detections_immunity_kind = zeros(Int, 6, max_days + 1)
+  detections_ages = zeros(Int, num_agegroup, max_days + 1)
   death_immunity_kind = zeros(Int, 6, max_days + 1)
   hospitalization_immunity_kind = zeros(Int, 6, max_days + 1)
   hospitalization_release_immunity_kind = zeros(Int, 6, max_days + 1)
@@ -73,9 +77,12 @@ function save_daily_trajectories(dict, state::MocosSim.SimState, params::MocosSi
         immunity_int = state.individuals[i].immunity |> UInt8
         time_int = infection_times[i] + 1 |> floor |> Int
         infections_immunity_kind[immunity_int,time_int] += 1
+        group_ids = MocosSim.agegroup(thresholds,params.ages[i]) |> Int
+        infections_ages[group_ids,time_int] += 1
         if cb.detection_times[i] !== missing && cb.detection_times[i] <=max_days
           time_int = cb.detection_times[i] + 1 |> floor |> Int
           detections_immunity_kind[immunity_int,time_int] += 1
+          detections_ages[group_ids,time_int] += 1
         end
       end
       if death_progressions[i] !== missing && infection_times[i] + death_progressions[i] <= max_days
@@ -114,5 +121,9 @@ function save_daily_trajectories(dict, state::MocosSim.SimState, params::MocosSi
       dict["daily_hospitalizations_" * lowercase(string(immunity))] = hospitalization_immunity_kind[immunity_int,:]
       dict["daily_hospital_releases_" * lowercase(string(immunity))] = hospitalization_release_immunity_kind[immunity_int,:]
     end
+  end
+  for group_ids in 1:num_agegroup
+    dict["daily_infections_" * string(thresholds[group_ids])] = infections_ages[group_ids,:]
+    dict["daily_detections_" * string(thresholds[group_ids])] = detections_ages[group_ids,:]
   end
 end
