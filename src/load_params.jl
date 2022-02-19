@@ -132,5 +132,8 @@ function read_params(config, rng::AbstractRNG)
     hospital_kernel_param = hospital_kernel_param,
     healthcare_detection_prob = healthcare_detection_prob,
     healthcare_detection_delay = healthcare_detection_delay,
+
+    omicron_strain_susceptibility = Float32[1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
+    delta_strain_susceptibility = Float32[1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
   )
 end
