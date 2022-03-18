@@ -35,7 +35,7 @@ function read_params(config, rng::AbstractRNG)
 
   infection_modulation = get(config, "infection_modulation", nothing) |> create_modulation
   mild_detection_modulation = get(config, "mild_detection_modulation", nothing) |> create_modulation
-  tracing_modulation = get(config, "tracing_modulation", nothing)
+  tracing_modulation = get(config, "tracing_modulation", nothing) |> create_modulation
 
   constant_kernel_param = config["transmission_probabilities"]["constant"]  |> float
   household_kernel_param = config["transmission_probabilities"]["household"] |> float
@@ -67,6 +67,14 @@ function read_params(config, rng::AbstractRNG)
   spreading_alpha = isnothing(spreading) ? nothing : spreading["alpha"]
   spreading_x0 = isnothing(spreading) ? 1 : get(spreading, "x0", 1)
   spreading_truncation = isnothing(spreading) ? Inf : get(spreading, "truncation", Inf)
+
+  household_params = if !haskey(config, "household_params")
+      nothing
+    else
+      hparams = config["household_params"]
+      NamedTuple{Tuple(Symbol.(keys(hparams)))}(values(hparams))
+      MocosSim.HouseholdParams(;NamedTuple{Tuple(Symbol.(keys(hparams)))}(values(hparams))...)
+    end
 
   phone_tracing = get(config, "phone_tracing", nothing)
   phone_tracing_usage = isnothing(phone_tracing) ? 0.0 : phone_tracing["usage"] |> float
@@ -116,6 +124,7 @@ function read_params(config, rng::AbstractRNG)
     age_coupling_use_genders = age_coupling_use_genders,
 
     screening_params = screening_params,
+    household_params = household_params,
 
     spreading_alpha=spreading_alpha,
     spreading_x0=spreading_x0,
