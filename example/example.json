@@ -14,7 +14,8 @@
     "hospital": 0.0,
     "age_coupling_param": 0.37125,
     "age_coupling_data_path": "../COVIMOD_Wave_4.jld2",
-    "omicron_multiplier": 5.1
+    "omicron_multiplier": 4.0,
+    "omicron_strain_multiplier": 3.0
   },
   "imported_cases" : [
     {
@@ -23,6 +24,14 @@
         "num_infections" : 100,
         "import_time" : 0.0,
         "strain" : "Omicron"
+      }
+    },
+    {
+      "function" : "InstantOutsideCases",
+      "params" : {
+        "num_infections" : 100,
+        "import_time" : 0.0,
+        "strain" : "Delta"
       }
     }
   ],

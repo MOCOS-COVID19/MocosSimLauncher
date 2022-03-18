@@ -50,11 +50,12 @@ function save_daily_trajectories(dict, state::MocosSim.SimState, params::MocosSi
   infection_times = Vector{OptTimePoint}(missing, num_individuals)
   contact_kinds = Vector{MocosSim.ContactKind}(undef, num_individuals)
   non_asymptomatic = Vector{OptTimePoint}(missing, num_individuals)
-
   infections_immunity_kind = zeros(Int, 6, max_days + 1)
   infections_ages = zeros(Int, num_agegroup, max_days + 1)
+  infections_strain_kind = zeros(Int, MocosSim.NUM_STRAINS, max_days + 1)
   detections_immunity_kind = zeros(Int, 6, max_days + 1)
   detections_ages = zeros(Int, num_agegroup, max_days + 1)
+  detections_strain_kind = zeros(Int, MocosSim.NUM_STRAINS, max_days + 1)
   death_immunity_kind = zeros(Int, 6, max_days + 1)
   hospitalization_immunity_kind = zeros(Int, 6, max_days + 1)
   hospitalization_release_immunity_kind = zeros(Int, 6, max_days + 1)
@@ -79,10 +80,15 @@ function save_daily_trajectories(dict, state::MocosSim.SimState, params::MocosSi
         infections_immunity_kind[immunity_int,time_int] += 1
         group_ids = MocosSim.agegroup(thresholds,params.ages[i]) |> Int
         infections_ages[group_ids,time_int] += 1
+        strain_int = state.individuals[i].strain |> UInt8
+        if strain_int != 0#czasami pojawiają się nullstrain
+          infections_strain_kind[strain_int,time_int] += 1
+        end
         if cb.detection_times[i] !== missing && cb.detection_times[i] <=max_days
           time_int = cb.detection_times[i] + 1 |> floor |> Int
           detections_immunity_kind[immunity_int,time_int] += 1
           detections_ages[group_ids,time_int] += 1
+          detections_strain_kind[strain_int,time_int] += 1
         end
       end
       if death_progressions[i] !== missing && infection_times[i] + death_progressions[i] <= max_days
@@ -120,6 +126,13 @@ function save_daily_trajectories(dict, state::MocosSim.SimState, params::MocosSi
       dict["daily_death_" * lowercase(string(immunity))] = death_immunity_kind[immunity_int,:]
       dict["daily_hospitalizations_" * lowercase(string(immunity))] = hospitalization_immunity_kind[immunity_int,:]
       dict["daily_hospital_releases_" * lowercase(string(immunity))] = hospitalization_release_immunity_kind[immunity_int,:]
+    end
+  end
+  for strain in instances(MocosSim.StrainKind)
+    if strain !== MocosSim.NullStrain
+      strain_int = strain |> UInt8
+      dict["daily_infections_" * lowercase(string(strain))] = infections_strain_kind[strain_int,:]
+      dict["daily_detections_" * lowercase(string(strain))] = detections_strain_kind[strain_int,:]
     end
   end
   for group_ids in 1:num_agegroup
