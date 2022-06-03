@@ -1,6 +1,6 @@
 {
   "num_trajectories" : 10,
-  "population_path" : "../saxony_population_v3.jld2",
+  "population_path" : "../poland_v3.jld2",
   "mild_detection_prob" : 0.5,
   "mild_detection_delay" : 2.0,
   "contact_tracing": {
@@ -13,7 +13,7 @@
     "constant":  0.0,
     "hospital": 0.0,
     "age_coupling_param": 0.37125,
-    "age_coupling_data_path": "../COVIMOD_Wave_4.jld2",
+    "age_coupling_data_path": "../contact_mat_pol.jld2",
     "omicron_multiplier": 4.0,
     "omicron_strain_multiplier": 3.0
   },
@@ -40,21 +40,9 @@
     "hospitalization_multiplier" : 0.5,
     "death_multiplier" : 2.7,
     "immunization" : {
-      "age_groups" : {
-        "immunization_thresholds" : [0, 12, 18, 60],
-        "immunization_levels" : [0.0, 0.35, 0.64, 0.81],
-        "immunization_booster" : [0.0, 0.05, 0.31, 0.55],
-        "immunization_previously_infected"  : [0.30, 0.30, 0.30],
-        "effectiveness" :{
-          "no_immunity" : [0.0, 0.0, 0.0, 0.0],
-          "prev_infected" : [0.0, 0.3, 0.5, 0.5],
-          "vacc" : [0.0, 0.0, 0.82, 0.82],
-          "vacc_infected" : [0.0, 0.50, 0.91, 0.91],
-          "boost" : [0.0, 0.50, 0.875, 0.92],
-          "boost_infected" : [0.0, 0.50, 0.9375, 0.96]
-        }
+      "immunity_event" : "../events.jld2"
       }
-    }
+    
   },
   "screening" : {
     "start_time" : 0,

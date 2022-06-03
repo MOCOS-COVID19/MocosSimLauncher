@@ -65,6 +65,7 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
   immunization = nothing
   immune = nothing
   immune_ages = nothing
+  immune_events = nothing
   if haskey(config, "initial_conditions")
     initial_conditions = config["initial_conditions"]
     if haskey(initial_conditions, "immunization")
@@ -77,6 +78,10 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
         immunization_tables = hcat(immunization_levels,immunization_booster) |> Matrix{Float32}
         immunization_previously_infected = get(immunization_cfg["age_groups"], "immunization_previously_infected", [0.24, 0.24, 0.24, 0.24]) |> Vector{Float32}
         immune_ages = [immunization_thresholds, immunization_tables, immunization_previously_infected]
+      end
+
+      if haskey(immunization_cfg, "immunity_event")
+        immune_events = load(immunization_cfg["immunity_event"], "events")::MocosSim.ImmunizationEvent
       end
 
       if haskey(immunization_cfg, "order_file")
@@ -154,9 +159,9 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
       end
     end
 
-    if immunization !== nothing
-      immunization::MocosSim::Immunization
-      MocosSim.immunize!(state, immunization, enqueue_immunizations)
+    if immune_events !== nothing
+      immune_events::MocosSim.ImmunizationEvent
+      MocosSim.immunize!(state, immune_events)
     end
 
     callback = callbacks[threadid()]
