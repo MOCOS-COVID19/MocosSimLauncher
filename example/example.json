@@ -14,24 +14,17 @@
     "hospital": 0.0,
     "age_coupling_param": 0.37125,
     "age_coupling_data_path": "../contact_mat_pol.jld2",
-    "omicron_multiplier": 4.0,
     "omicron_strain_multiplier": 3.0
   },
   "imported_cases" : [
     {
-      "function" : "InstantOutsideCases",
+      "function" : "CyclicOutsideCases",
       "params" : {
-        "num_infections" : 100,
+        "num_infections" : 20,
         "import_time" : 0.0,
+        "frequency" : 1.0,
+        "time_limit" : 10.0,
         "strain" : "Omicron"
-      }
-    },
-    {
-      "function" : "InstantOutsideCases",
-      "params" : {
-        "num_infections" : 100,
-        "import_time" : 0.0,
-        "strain" : "Delta"
       }
     }
   ],
@@ -39,22 +32,9 @@
     "hospitalization_ratio" : 0.6,
     "hospitalization_multiplier" : 0.5,
     "death_multiplier" : 2.7,
-    "immunization" : {
-      "immunity_event" : "../events.jld2"
-      }
-    
-  },
-  "screening" : {
-    "start_time" : 0,
-    "precision" : 0.5,
-    "period" : 3.5,
-    "lower_bound_age" : 8,
-    "upper_bound_age" : 16
-  },
-  "phone_tracing": {
-    "usage" : 0.03,
-    "detection_delay" : 0.25,
-    "usage_by_household" : true
+    "immunization":{
+      "immunity_events" : "../slow_summer_pessimistic_events.jld2"
+    }
   },
   "healthcare_detections":{
     "probability": 0.8,
