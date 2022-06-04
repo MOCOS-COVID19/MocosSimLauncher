@@ -80,8 +80,8 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
         immune_ages = [immunization_thresholds, immunization_tables, immunization_previously_infected]
       end
 
-      if haskey(immunization_cfg, "immunity_event")
-        immune_events = load(immunization_cfg["immunity_event"], "events")::MocosSim.ImmunizationEvent
+      if haskey(immunization_cfg, "immunity_events")
+        immune_events = load(immunization_cfg["immunity_events"], "events")::MocosSim.ImmunizationEvents
       end
 
       if haskey(immunization_cfg, "order_file")
@@ -144,9 +144,6 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
       MocosSim.add_screening!(state, params, time_limit)
     end
 
-    if immune_ages !== nothing
-      MocosSim.immunize!(state, params, immune_ages[1], immune_ages[2], immune_ages[3])
-    end
 
     if immune !== nothing
       immune::AbstractVector{Bool}
@@ -158,9 +155,7 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
         state.individuals[i] = @set individual.health = MocosSim.Recovered
       end
     end
-
     if immune_events !== nothing
-      immune_events::MocosSim.ImmunizationEvent
       MocosSim.immunize!(state, immune_events)
     end
 
