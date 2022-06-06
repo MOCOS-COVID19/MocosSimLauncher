@@ -242,8 +242,8 @@ uuid = "a63ad114-7e13-5084-954f-fe012c677804"
 
 [[MocosSim]]
 deps = ["CodecZlib", "DataFrames", "DataStructures", "Distributions", "FixedPointNumbers", "LinearAlgebra", "Random", "SaferIntegers", "Setfield", "SortingAlgorithms", "StaticArrays"]
-git-tree-sha1 = "7b7ea33c20f1736e53563939a15670db891235e4"
-repo-rev = "ridzikowski/uptake-immunity"
+git-tree-sha1 = "17b5674c7cd6c3fd8e63f7b33d9dba762d3ff869"
+repo-rev = "a79bdb9fa2a052643dc700b01758875dcacaf4d8"
 repo-url = "https://github.com/MOCOS-COVID19/MocosSim"
 uuid = "af72bc66-7bc2-4ee8-90df-e21de508fcd7"
 version = "0.4.1"
