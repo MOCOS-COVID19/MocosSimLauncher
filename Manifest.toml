@@ -242,8 +242,8 @@ uuid = "a63ad114-7e13-5084-954f-fe012c677804"
 
 [[MocosSim]]
 deps = ["CodecZlib", "DataFrames", "DataStructures", "Distributions", "FixedPointNumbers", "LinearAlgebra", "Random", "SaferIntegers", "Setfield", "SortingAlgorithms", "StaticArrays"]
-git-tree-sha1 = "76f4281fb65f94afcc51948668aad17ffc1413b1"
-repo-rev = "faa163cbec7150f2f3151ca3bd1cae6bc88cb376"
+git-tree-sha1 = "71559629096e3da30b850fdf877c8e5877cfa72f"
+repo-rev = "315dc1d32cbfc27ea715506377161f0a5680fa94"
 repo-url = "../MocosSim"
 uuid = "af72bc66-7bc2-4ee8-90df-e21de508fcd7"
 version = "0.4.1"

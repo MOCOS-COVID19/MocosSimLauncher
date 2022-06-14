@@ -6,7 +6,12 @@ function create_modulation(modulation_dict)
   end
   params_dict = get(modulation_dict, "params", Dict{String,Any}())
   modulation_name = modulation_dict["function"]
+  if modulation_name == "IntervalsModulations"
+    params_dict["interval_values"] = params_dict["interval_values"] |> Vector{Float64}
+    params_dict["interval_times"] = params_dict["interval_times"] |> Vector{MocosSim.TimePoint}
+  end
   modulation_params =  NamedTuple{Tuple(Symbol.(keys(params_dict)))}(values(params_dict))
+
   MocosSim.make_infection_modulation( modulation_name; modulation_params...)
 end
 
