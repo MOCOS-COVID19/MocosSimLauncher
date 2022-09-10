@@ -32,6 +32,7 @@
     "hospitalization_ratio" : 0.6,
     "hospitalization_multiplier" : 0.5,
     "death_multiplier" : 2.7,
+    "incubation_ratio" : [1.0, 1.0, 1.0, 1.0],
     "immunization":{
       "immunity_events" : "../slow_summer_pessimistic_events.jld2"
     }

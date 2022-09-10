@@ -25,8 +25,8 @@ function read_params(config, rng::AbstractRNG)
   hospitalization_ratio = get(config["initial_conditions"], "hospitalization_ratio", 1.0) |> Float64
   hospitalization_multiplier = get(config["initial_conditions"], "hospitalization_multiplier", 1.0) |> Float64
   death_multiplier = get(config["initial_conditions"], "death_multiplier", 1.0) |> Float64
-
-  progression_params = MocosSim.make_progression_params(hospitalization_ratio, hospitalization_multiplier, death_multiplier)
+  incubation_ratio = get(config["initial_conditions"], "incubation_ratio", [1.0, 1.0, 1.0, 1.0]) |> Vector{Float64}
+  progression_params = MocosSim.make_progression_params(hospitalization_ratio, hospitalization_multiplier, death_multiplier, incubation_ratio)
 
   infection_modulation = get(config, "infection_modulation", nothing) |> create_modulation
   mild_detection_modulation = get(config, "mild_detection_modulation", nothing) |> create_modulation
