@@ -14,6 +14,9 @@
     "hospital": 0.0,
     "age_coupling_param": 0.37125,
     "age_coupling_data_path": "../contact_mat_pol.jld2",
+    "age_coupling_param_new": 0.4,
+    "age_coupling_data_path_new": "../contact_mat_pol.jld2",
+    "age_coupling_switch_time": 100,
     "omicron_strain_multiplier": 3.0
   },
   "imported_cases" : [

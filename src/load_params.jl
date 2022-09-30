@@ -50,6 +50,14 @@ function read_params(config, rng::AbstractRNG)
   age_coupling_thresholds, age_coupling_weights, age_coupling_use_genders =
     isnothing(age_coupling_data_path) ? (nothing, nothing, false) : load(age_coupling_data_path, "age_thresholds", "contact_mat", "uses_genders")
 
+  age_coupling_kernel_param_new = get(config["transmission_probabilities"], "age_coupling_param_new", nothing)
+  age_coupling_data_path_new = get(config["transmission_probabilities"], "age_coupling_data_path_new", nothing)
+  @assert isnothing(age_coupling_kernel_param_new) == isnothing(age_coupling_data_path_new)
+  age_coupling_thresholds2, age_coupling_weights2, age_coupling_use_genders2 =
+    isnothing(age_coupling_data_path_new) ? (nothing, nothing, false) : load(age_coupling_data_path_new, "age_thresholds", "contact_mat", "uses_genders")
+  age_coupling_switch_time = get(config["transmission_probabilities"], "age_coupling_switch_time", nothing)
+  @assert isnothing(age_coupling_switch_time) == isnothing(age_coupling_kernel_param_new)
+
   screening_params = if !haskey(config, "screening")
       nothing
     else
@@ -117,6 +125,12 @@ function read_params(config, rng::AbstractRNG)
     age_coupling_thresholds = age_coupling_thresholds,
     age_coupling_weights = age_coupling_weights,
     age_coupling_use_genders = age_coupling_use_genders,
+
+    age_coupling_param_new = age_coupling_kernel_param_new,
+    age_coupling_thresholds_new = age_coupling_thresholds2,
+    age_coupling_weights_new = age_coupling_weights2,
+    age_coupling_use_genders_new = age_coupling_use_genders2,
+    age_coupling_switch_time = age_coupling_switch_time,
 
     screening_params = screening_params,
     household_params = household_params,

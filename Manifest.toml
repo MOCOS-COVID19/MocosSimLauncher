@@ -242,8 +242,8 @@ uuid = "a63ad114-7e13-5084-954f-fe012c677804"
 
 [[MocosSim]]
 deps = ["CodecZlib", "DataFrames", "DataStructures", "Distributions", "FixedPointNumbers", "LinearAlgebra", "Random", "SaferIntegers", "Setfield", "SortingAlgorithms", "StaticArrays"]
-git-tree-sha1 = "14b81645fbcf9f448f07835bbf77993ff25ac7f3"
-repo-rev = "ridzikowski/incubation-variant"
+git-tree-sha1 = "a480309557f24acda9ba5000a55eab1958a23293"
+repo-rev = "mbodych/two_age_couplings"
 repo-url = "https://github.com/MOCOS-COVID19/MocosSim"
 uuid = "af72bc66-7bc2-4ee8-90df-e21de508fcd7"
 version = "0.4.1"
