@@ -51,14 +51,16 @@ function save_daily_trajectories(dict, state::MocosSim.SimState, params::MocosSi
   contact_kinds = Vector{MocosSim.ContactKind}(undef, num_individuals)
   non_asymptomatic = Vector{OptTimePoint}(missing, num_individuals)
   # infections_immunity_kind = zeros(Int, 6, max_days + 1)
-  # infections_ages = zeros(Int, num_agegroup, max_days + 1)
+  infections_ages = zeros(Int, num_agegroup, max_days + 1)
   # infections_strain_kind = zeros(Int, MocosSim.NUM_STRAINS, max_days + 1)
   # detections_immunity_kind = zeros(Int, 6, max_days + 1)
-  # detections_ages = zeros(Int, num_agegroup, max_days + 1)
+  detections_ages = zeros(Int, num_agegroup, max_days + 1)
   # detections_strain_kind = zeros(Int, MocosSim.NUM_STRAINS, max_days + 1)
   # death_immunity_kind = zeros(Int, 6, max_days + 1)
   # hospitalization_immunity_kind = zeros(Int, 6, max_days + 1)
   # hospitalization_release_immunity_kind = zeros(Int, 6, max_days + 1)
+  death_ages = zeros(Int, num_agegroup, max_days + 1)
+  hospitalization_admissions_ages = zeros(Int, num_agegroup, max_days + 1)
   for i in 1:num_individuals
     event = MocosSim.backwardinfection(state, i)
     kind = contactkind(event)
@@ -72,42 +74,44 @@ function save_daily_trajectories(dict, state::MocosSim.SimState, params::MocosSi
   death_progressions = getproperty.(state.progressions, :death_time)
   release_progressions = coalesce.(recovery_progressions, death_progressions)
   hospital_release_progressions = (hospitalization_progressions .- hospitalization_progressions) .+ release_progressions
-  # for i in 1:num_individuals
-  #   if non_asymptomatic[i] !== missing
-  #     if infection_times[i] !== missing && infection_times[i] <= max_days
-  #       immunity_int = state.individuals[i].immunity |> UInt8
-  #       time_int = infection_times[i] + 1 |> floor |> Int
-  #       infections_immunity_kind[immunity_int,time_int] += 1
-  #       group_ids = MocosSim.agegroup(thresholds,params.ages[i]) |> Int
-  #       infections_ages[group_ids,time_int] += 1
-  #       strain_int = state.individuals[i].strain |> UInt8
-  #       if strain_int != 0#czasami pojawiają się nullstrain
-  #         infections_strain_kind[strain_int,time_int] += 1
-  #       end
-  #       if cb.detection_times[i] !== missing && cb.detection_times[i] <=max_days
-  #         time_int = cb.detection_times[i] + 1 |> floor |> Int
-  #         detections_immunity_kind[immunity_int,time_int] += 1
-  #         detections_ages[group_ids,time_int] += 1
-  #         detections_strain_kind[strain_int,time_int] += 1
-  #       end
-  #     end
-  #     if death_progressions[i] !== missing && infection_times[i] + death_progressions[i] <= max_days
-  #       immunity_int = state.individuals[i].immunity |> UInt8
-  #       time_int = infection_times[i] + death_progressions[i] + 1 |> floor |> Int
-  #       death_immunity_kind[immunity_int,time_int] += 1
-  #     end
-  #     if hospitalization_progressions[i] !== missing && infection_times[i] +  hospitalization_progressions[i] <= max_days
-  #       immunity_int = state.individuals[i].immunity |> UInt8
-  #       time_int = infection_times[i] + hospitalization_progressions[i] + 1 |> floor |> Int
-  #       hospitalization_immunity_kind[immunity_int,time_int] += 1
-  #     end
-  #     if hospital_release_progressions[i] !== missing && infection_times[i] +  hospital_release_progressions[i] <= max_days
-  #       immunity_int = state.individuals[i].immunity |> UInt8
-  #       time_int = infection_times[i] + hospital_release_progressions[i] + 1 |> floor |> Int
-  #       hospitalization_release_immunity_kind[immunity_int,time_int] += 1
-  #     end
-  #   end
-  # end
+  for i in 1:num_individuals
+    if non_asymptomatic[i] !== missing
+      group_ids = MocosSim.agegroup(thresholds,params.ages[i]) |> Int
+      if infection_times[i] !== missing && infection_times[i] <= max_days
+        # immunity_int = state.individuals[i].immunity |> UInt8
+        time_int = infection_times[i] + 1 |> floor |> Int
+        # infections_immunity_kind[immunity_int,time_int] += 1
+        infections_ages[group_ids,time_int] += 1
+        # strain_int = state.individuals[i].strain |> UInt8
+        # if strain_int != 0#czasami pojawiają się nullstrain
+        #   infections_strain_kind[strain_int,time_int] += 1
+        # end
+        if cb.detection_times[i] !== missing && cb.detection_times[i] <=max_days
+          time_int = cb.detection_times[i] + 1 |> floor |> Int
+          # detections_immunity_kind[immunity_int,time_int] += 1
+          detections_ages[group_ids,time_int] += 1
+          # detections_strain_kind[strain_int,time_int] += 1
+        end
+      end
+      if death_progressions[i] !== missing && infection_times[i] + death_progressions[i] <= max_days
+        # immunity_int = state.individuals[i].immunity |> UInt8
+        time_int = infection_times[i] + death_progressions[i] + 1 |> floor |> Int
+        # death_immunity_kind[immunity_int,time_int] += 1
+        death_ages[group_ids,time_int] += 1
+      end
+      if hospitalization_progressions[i] !== missing && infection_times[i] +  hospitalization_progressions[i] <= max_days
+        # immunity_int = state.individuals[i].immunity |> UInt8
+        time_int = infection_times[i] + hospitalization_progressions[i] + 1 |> floor |> Int
+        # hospitalization_immunity_kind[immunity_int,time_int] += 1
+        hospitalization_admissions_ages[group_ids,time_int] += 1
+      end
+      # if hospital_release_progressions[i] !== missing && infection_times[i] +  hospital_release_progressions[i] <= max_days
+      #   immunity_int = state.individuals[i].immunity |> UInt8
+      #   time_int = infection_times[i] + hospital_release_progressions[i] + 1 |> floor |> Int
+      #   hospitalization_release_immunity_kind[immunity_int,time_int] += 1
+      # end
+    end
+  end
   dict["daily_infections"] = daily(filter(!ismissing, infection_times .* non_asymptomatic), max_days)
   dict["daily_detections"] = daily(filter(!ismissing, cb.detection_times .* non_asymptomatic), max_days)
   dict["daily_deaths"] = daily(filter(!ismissing, infection_times.+death_progressions), max_days)
@@ -135,8 +139,10 @@ function save_daily_trajectories(dict, state::MocosSim.SimState, params::MocosSi
   #     dict["daily_detections_" * lowercase(string(strain))] = detections_strain_kind[strain_int,:]
   #   end
   # end
-  # for group_ids in 1:num_agegroup
-  #   dict["daily_infections_" * string(thresholds[group_ids])] = infections_ages[group_ids,:]
-  #   dict["daily_detections_" * string(thresholds[group_ids])] = detections_ages[group_ids,:]
-  # end
+  for group_ids in 1:num_agegroup
+    dict["daily_infections_" * string(thresholds[group_ids])] = infections_ages[group_ids,:]
+    dict["daily_detections_" * string(thresholds[group_ids])] = detections_ages[group_ids,:]
+    dict["daily_death_" * string(thresholds[group_ids])] = death_ages[group_ids,:]
+    dict["daily_hospitalization_admissions_" * string(thresholds[group_ids])] = hospitalization_admissions_ages[group_ids,:]
+  end
 end
