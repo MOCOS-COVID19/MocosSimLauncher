@@ -34,7 +34,8 @@ function read_params(config, rng::AbstractRNG)
 
   constant_kernel_param = config["transmission_probabilities"]["constant"]  |> float
   household_kernel_param = config["transmission_probabilities"]["household"] |> float
-
+  class_kernel_param = get(config["transmission_probabilities"], "class", 0.0) |> float
+  school_kernel_param = get(config["transmission_probabilities"], "school", 0.0) |> float
   hospital_detections = get(config, "hospital_detections", true) |> Bool
   mild_detection_prob = config["mild_detection_prob"]  |> float
   mild_detection_delay = get(config, "mild_detection_delay", 2.0) |> float
@@ -99,6 +100,8 @@ function read_params(config, rng::AbstractRNG)
 
     constant_kernel_param = constant_kernel_param,
     household_kernel_param = household_kernel_param,
+    class_kernel_param = class_kernel_param,
+    school_kernel_param = school_kernel_param,
 
     hospital_detections = hospital_detections,
     mild_detection_prob = mild_detection_prob,
