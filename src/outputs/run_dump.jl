@@ -9,7 +9,7 @@ function pushtrajectory!(d::RunDump, trajectory_id::Integer, writelock::Base.Abs
   try lock(writelock)
     f = jldopen(d.path_prefix*"_$trajectory_id.jld2", "w", compress=true)
     try
-      dict = JLD2.Group(d.path_prefix*"_$trajectory_id.jld2", string(trajectory_id))
+      dict = JLD2.Group(f, string(trajectory_id))
       num_individuals = MocosSim.numindividuals(state)
       infection_times = Vector{OptTimePoint}(missing, num_individuals)
       death_times = Vector{OptTimePoint}(missing, num_individuals)
