@@ -12,6 +12,7 @@ using JSON
 using ProgressMeter
 using Random
 using Setfield
+using TOML
 
 import MocosSim
 import MocosSim: ContactKind, NoContact, contactkind, time
@@ -46,32 +47,44 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
 
   cmd_args = parse_commandline(args)
   @info "Parsed args" cmd_args
-  json = JSON.parsefile(cmd_args["JSON"])
+  config_path = cmd_args["CONFIG"]
+  config = endswith(config_path, ".json") ? JSON.parsefile(config_path) : TOML.parsefile(config_path)
 
-  max_num_infected = json["stop_simulation_threshold"] |> Int
-  time_limit = get(json, "stop_simulation_time", typemax(MocosSim.TimePoint)) |> MocosSim.TimePoint
-  num_trajectories = json["num_trajectories"] |> Int
-  params_seed = get(json, "params_seed", 0)
+  max_num_infected = config["stop_simulation_threshold"] |> Int
+  time_limit = get(config, "stop_simulation_time", typemax(MocosSim.TimePoint)) |> MocosSim.TimePoint
+  num_trajectories = config["num_trajectories"] |> Int
+  params_seed = get(config, "params_seed", 0)
 
   @info "loading population and setting up parameters" params_seed
   rng = MersenneTwister(params_seed)
   GC.gc()
-  params = read_params(json, rng)
+  params = read_params(config, rng)
   GC.gc()
   num_individuals =  MocosSim.numindividuals(params)
 
+  immunization = nothing
   immune = nothing
-  if haskey(json, "initial_conditions")
-    initial_conditions = json["initial_conditions"]
+  if haskey(config, "initial_conditions")
+    initial_conditions = config["initial_conditions"]
     if haskey(initial_conditions, "immunization")
-      immunization = initial_conditions["immunization"]
-      immunization_ordering::AbstractVector{T} where T<: Integer = load(immunization["order_data"], "ordering")
-      immunization_level::Real = immunization["level"]
+      immunization_cfg = initial_conditions["immunization"]
 
-      num_immune = round(UInt, immunization_level * num_individuals)
-      immune_ids = @view immunization_ordering[begin : num_immune]
-      immune = falses(num_individuals)
-      immune[immune_ids] .= true
+      if haskey(immunization_cfg, "order_file")
+        immunization = load(immunization_cfg["order_file"], "immunization")::MocosSim.Immunization
+        enqueue_immunizations = get(immunization_cfg, "enqueue", true) |> Bool
+      end
+
+      # keeping legacy immunization for a while
+      if haskey(immunization_cfg, "level")
+        @warn "legacy immunization in use"
+        immunization_ordering::AbstractVector{T} where T<: Integer = load(immunization_cfg["order_data"], "ordering")
+        immunization_level::Real = immunization_cfg["level"]
+
+        num_immune = round(UInt, immunization_level * num_individuals)
+        immune_ids = @view immunization_ordering[begin : num_immune]
+        immune = falses(num_individuals)
+        immune[immune_ids] .= true
+      end
     end
   end
   @info "allocating simulation states"
@@ -89,8 +102,8 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
   GC.gc()
 
   outside_case_imports = MocosSim.AbstractOutsideCases[]
-  if haskey(json, "imported_cases")
-    for outside_import in json["imported_cases"]
+  if haskey(config, "imported_cases")
+    for outside_import in config["imported_cases"]
       name = outside_import["function"]
       params_dict = get(outside_import, "params", Dict{String,Any}())
       if haskey(params_dict, "strain")
@@ -124,6 +137,11 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
         individual = state.individuals[i]
         state.individuals[i] = @set individual.health = MocosSim.Recovered
       end
+    end
+
+    if immunization !== nothing
+      immunization::MocosSim::Immunization
+      MocosSim.immunize!(state, immunization, enqueue_immunizations)
     end
 
     callback = callbacks[threadid()]

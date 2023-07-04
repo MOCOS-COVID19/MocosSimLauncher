@@ -55,9 +55,9 @@ function save_daily_trajectories(dict, state::MocosSim.SimState, params::MocosSi
     infection_times[i] = ifelse(kind == MocosSim.NoContact, missing, time(event))
   end
 
-  hospitalization_progressions = getproperty.(params.progressions, :severe_symptoms_time)
-  recovery_progressions = getproperty.(params.progressions, :recovery_time)
-  death_progressions = getproperty.(params.progressions, :death_time)
+  hospitalization_progressions = getproperty.(state.progressions, :severe_symptoms_time)
+  recovery_progressions = getproperty.(state.progressions, :recovery_time)
+  death_progressions = getproperty.(state.progressions, :death_time)
   release_progressions = coalesce.(recovery_progressions, death_progressions)
   hospital_release_progressions = ifelse.(ismissing.(hospitalization_progressions), missing,  release_progressions)
 

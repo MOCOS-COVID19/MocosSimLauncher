@@ -4,8 +4,8 @@ using ArgParse
 function parse_commandline(args::AbstractVector{T} where T<:AbstractString)
 	s = ArgParseSettings()
 	@add_arg_table! s begin
-		"JSON"
-      help = "path to a JSON file with the parameter settings"
+		"CONFIG"
+      help = "path to a TOML or JSON file with the parameter settings"
       required = true
       arg_type = String
     "--output-params-dump"

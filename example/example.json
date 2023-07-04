@@ -1,11 +1,11 @@
 {
   "num_trajectories" : 10,
   "population_path" : "example/dolnoslaskie_population.jld2",
-  "detection_mild_proba" : 0.3,
-  "contact_tracking": {
+  "mild_detection_prob" : 0.3,
+  "mild_detection_delay" : 2.0,
+  "contact_tracing": {
     "probability" : 0.5,
-    "backward_detection_delay" : 1.75,
-    "forward_detection_delay" : 1.75,
+    "detection_delay" : 1.75,
     "testing_time" : 0.25
   },
   "transmission_probabilities": {
@@ -47,7 +47,7 @@
     "lower_bound_age" : 8,
     "upper_bound_age" : 16
   },
-  "modulation":{
+  "infection_modulation":{
     "function" : "TanhModulation",
     "params" : {
       "scale": 2000,
@@ -68,10 +68,14 @@
       "level": 0.1
     }
   },
-  "phone_tracking": {
+  "phone_tracing": {
     "usage" : 0.03,
     "detection_delay" : 0.25,
     "usage_by_household" : true
+  },
+  "healthcare_detections":{
+    "probability": 0.8,
+    "delay": 1.0
   },
   "stop_simulation_threshold": 1000000,
   "stop_simulation_time" : 100
