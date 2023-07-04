@@ -64,8 +64,7 @@
   },
   "initial_conditions": {
     "immunization": {
-      "order_data": "example/dolnoslaskie-immunization.jld2",
-      "level": 0.1
+      "order_file": "example/dolnoslaskie-immunization.jld2"
     }
   },
   "phone_tracing": {

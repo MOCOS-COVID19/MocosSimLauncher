@@ -70,7 +70,7 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
       immunization_cfg = initial_conditions["immunization"]
 
       if haskey(immunization_cfg, "order_file")
-        immunization = load(immunization_cfg["order_file"], "immunization")::MocosSim.Immunization
+        immunization = load(immunization_cfg["order_file"], "immunization")::MocosSim.ImmunizationOrder
         enqueue_immunizations = get(immunization_cfg, "enqueue", true) |> Bool
       end
 
@@ -140,8 +140,8 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
     end
 
     if immunization !== nothing
-      immunization::MocosSim::Immunization
-      MocosSim.immunize!(state, immunization, enqueue_immunizations)
+      immunization::MocosSim.ImmunizationOrder
+      MocosSim.immunize!(state, immunization, enqueue=enqueue_immunizations)
     end
 
     callback = callbacks[threadid()]
