@@ -20,7 +20,6 @@ function pushtrajectory!(d::RunDump, trajectory_id::Integer, writelock::Base.Abs
 
       # Prepare an array to store the contact kind as strings
       contact_kinds = Vector{String}(undef, num_individuals)
-      strain_kinds = Vector{String}(undef, num_individuals)
 
       source_ids = Vector{UInt32}(undef, num_individuals)
 
@@ -39,8 +38,6 @@ function pushtrajectory!(d::RunDump, trajectory_id::Integer, writelock::Base.Abs
         incubation_times[i] = infection_times[i] + incubation_progressions[i]
         # Convert enum to string
         contact_kinds[i] = string(kind)
-        strain_kind = strainkind(event)
-        strain_kinds[i] = string(strain_kind)
 
         source_ids[i] = ifelse(kind == MocosSim.NoContact, undef, source(event))
       end
@@ -51,7 +48,6 @@ function pushtrajectory!(d::RunDump, trajectory_id::Integer, writelock::Base.Abs
       dict["recovery_times"] = recovery_times
       dict["incubation_times"] = incubation_times
       dict["contact_kinds"] = contact_kinds
-      dict["strain_kinds"] = strain_kinds
       dict["source_ids"] = source_ids
     finally
       close(f)

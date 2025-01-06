@@ -45,7 +45,7 @@ function save_daily_trajectories(dict, state::MocosSim.SimState, params::MocosSi
   max_days = MocosSim.time(state) |> floor |> Int
   num_individuals = MocosSim.numindividuals(state)
   #max_ages = maximum(params.ages)
-  thresholds = [0, 12, 18, 60]
+  thresholds = [0, 18, 60, 70, 80]
   num_agegroup = length(thresholds)
   infection_times = Vector{OptTimePoint}(missing, num_individuals)
   contact_kinds = Vector{MocosSim.ContactKind}(undef, num_individuals)
@@ -61,6 +61,7 @@ function save_daily_trajectories(dict, state::MocosSim.SimState, params::MocosSi
   # hospitalization_release_immunity_kind = zeros(Int, 6, max_days + 1)
   death_ages = zeros(Int, num_agegroup, max_days + 1)
   hospitalization_admissions_ages = zeros(Int, num_agegroup, max_days + 1)
+  hospitalization_releases_ages = zeros(Int, num_agegroup, max_days + 1)
   for i in 1:num_individuals
     event = MocosSim.backwardinfection(state, i)
     kind = contactkind(event)
@@ -105,11 +106,12 @@ function save_daily_trajectories(dict, state::MocosSim.SimState, params::MocosSi
         # hospitalization_immunity_kind[immunity_int,time_int] += 1
         hospitalization_admissions_ages[group_ids,time_int] += 1
       end
-      # if hospital_release_progressions[i] !== missing && infection_times[i] +  hospital_release_progressions[i] <= max_days
-      #   immunity_int = state.individuals[i].immunity |> UInt8
-      #   time_int = infection_times[i] + hospital_release_progressions[i] + 1 |> floor |> Int
-      #   hospitalization_release_immunity_kind[immunity_int,time_int] += 1
-      # end
+      if hospital_release_progressions[i] !== missing && infection_times[i] +  hospital_release_progressions[i] <= max_days
+         #   immunity_int = state.individuals[i].immunity |> UInt8
+         time_int = infection_times[i] + hospital_release_progressions[i] + 1 |> floor |> Int
+         #   hospitalization_release_immunity_kind[immunity_int,time_int] += 1
+         hospitalization_releases_ages[group_ids,time_int] += 1
+      end
     end
   end
   dict["daily_infections"] = daily(filter(!ismissing, infection_times .* non_asymptomatic), max_days)
@@ -144,5 +146,6 @@ function save_daily_trajectories(dict, state::MocosSim.SimState, params::MocosSi
     dict["daily_detections_" * string(thresholds[group_ids])] = detections_ages[group_ids,:]
     dict["daily_death_" * string(thresholds[group_ids])] = death_ages[group_ids,:]
     dict["daily_hospitalization_admissions_" * string(thresholds[group_ids])] = hospitalization_admissions_ages[group_ids,:]
+    dict["daily_hospitalization_releases_" * string(thresholds[group_ids])] = hospitalization_releases_ages[group_ids,:]
   end
 end
