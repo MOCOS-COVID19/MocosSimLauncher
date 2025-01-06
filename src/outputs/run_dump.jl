@@ -39,7 +39,7 @@ function pushtrajectory!(d::RunDump, trajectory_id::Integer, writelock::Base.Abs
         # Convert enum to string
         contact_kinds[i] = string(kind)
 
-        source_ids[i] = ifelse(kind == MocosSim.NoContact, undef, source(event))
+        source_ids[i] = ifelse(MocosSim.NoContact == kind || MocosSim.OutsideContact == kind, undef, source(event))
       end
       dict["detections"] = detection_times
       dict["infections"] = infection_times
