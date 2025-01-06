@@ -22,7 +22,7 @@ function pushtrajectory!(d::RunDump, trajectory_id::Integer, writelock::Base.Abs
       contact_kinds = Vector{String}(undef, num_individuals)
       strain_kinds = Vector{String}(undef, num_individuals)
 
-      source_ids = Vector{UInt32}(undef, num_individuals)
+      source_ids = Vector{Union{Missing, UInt32}}(missing, num_individuals)
 
       hospitalization_progressions = getproperty.(state.progressions, :severe_symptoms_time)
       death_progressions = getproperty.(state.progressions, :death_time)
@@ -42,7 +42,7 @@ function pushtrajectory!(d::RunDump, trajectory_id::Integer, writelock::Base.Abs
         strain_kind = MocosSim.strainkind(event)
         strain_kinds[i] = string(strain_kind)
 
-        source_ids[i] = ifelse(MocosSim.NoContact == kind || MocosSim.OutsideContact == kind, undef, MocosSim.source(event))
+        source_ids[i] = ifelse(MocosSim.NoContact == kind || MocosSim.OutsideContact == kind, missing, MocosSim.source(event))
       end
       dict["detections"] = detection_times
       dict["infections"] = infection_times
