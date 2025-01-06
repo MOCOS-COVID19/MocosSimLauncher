@@ -170,6 +170,8 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
       @warn "Failed on thread " threadid() trajectory_id err
       foreach(x -> println(stderr, x), stacktrace(catch_backtrace()))
     end
+    path = "test.jld2"
+    save_infections_and_detections(path, state, callback)
 
     ProgressMeter.next!(progress) # is thread-safe
   end
