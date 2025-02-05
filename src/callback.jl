@@ -70,13 +70,17 @@ function saveparams(dict, cb::DetectionCallback, prefix::AbstractString="")
   dict[prefix*"transmission_types"] = cb.transmission_types
 end
 
-function save_infections_and_detections(path::AbstractString, simstate::MocosSim.SimState, callback::DetectionCallback)
-  f = jldopen(path, "w", compress=true)
-  try
-    # MocosSim.saveparams(f, simstate)
-    saveparams(f, callback)
+function save_infections_and_detections(path::AbstractString, writelock::Base.AbstractLock, simstate::MocosSim.SimState, callback::DetectionCallback)
+  try lock(writelock)
+    f = jldopen(path, "w", compress=true)
+    try
+      # MocosSim.saveparams(f, simstate)
+      saveparams(f, callback)
+    finally
+      close(f)
+    end
   finally
-    close(f)
+    unlock(writelock)
   end
   nothing
 end

@@ -113,6 +113,7 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
 
   @info "starting simulation" num_trajectories
   writelock = ReentrantLock()
+  writelock2 = ReentrantLock()
   progress = ProgressMeter.Progress(num_trajectories)
   GC.gc()
 
@@ -166,13 +167,12 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
       for o in outputs
         pushtrajectory!(o, trajectory_id, writelock, state, params, callback)
       end
+      path = "test.jld2"
+      save_infections_and_detections(path, writelock2, state, callback)
     catch err
       @warn "Failed on thread " threadid() trajectory_id err
       foreach(x -> println(stderr, x), stacktrace(catch_backtrace()))
     end
-    path = "test.jld2"
-    save_infections_and_detections(path, state, callback)
-
     ProgressMeter.next!(progress) # is thread-safe
   end
 
