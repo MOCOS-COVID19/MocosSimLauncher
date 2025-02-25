@@ -121,7 +121,7 @@ function save_daily_trajectories(dict, state::MocosSim.SimState, params::MocosSi
   dict["daily_hospital_releases"] = daily(filter(!ismissing, (infection_times.+hospital_release_progressions) .* non_asymptomatic), max_days)
   for kind in instances(MocosSim.ContactKind)
     if kind != NoContact
-      dict["daily_" * lowercase(string(kind))] = daily(infection_times[contact_kinds.==Int(kind)], max_days)
+      dict["daily_" * lowercase(string(kind))] = daily(infection_times[contact_kinds.==kind], max_days)
     end
   end
   # for immunity in instances(MocosSim.ImmunityState)
