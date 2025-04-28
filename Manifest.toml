@@ -283,7 +283,7 @@ uuid = "a63ad114-7e13-5084-954f-fe012c677804"
 
 [[MocosSim]]
 deps = ["CodecZlib", "DataFrames", "DataStructures", "Distributions", "FixedPointNumbers", "LinearAlgebra", "Random", "SaferIntegers", "Setfield", "SortingAlgorithms", "StaticArrays"]
-git-tree-sha1 = "fdfa2fa6304063f3cf4bae1fd236af5fcee9c7f9"
+git-tree-sha1 = "4ec99b614844e7dfd17bba12aee5feaafb360bcb"
 repo-rev = "saxony_classes_infection_mod_alternative"
 repo-url = "https://github.com/MOCOS-COVID19/MocosSim"
 uuid = "af72bc66-7bc2-4ee8-90df-e21de508fcd7"
