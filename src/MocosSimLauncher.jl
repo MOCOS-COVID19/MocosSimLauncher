@@ -141,8 +141,7 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
       outside_fun(state, params)
     end
     if params.screening_params !== nothing
-      time_limit = get(config, "time_limit", typemax(MocosSim.TimePoint)) |> MocosSim.TimePoint
-      MocosSim.add_screening!(state, params, time_limit)
+      MocosSim.add_screening!(state, params)
     end
 
 
