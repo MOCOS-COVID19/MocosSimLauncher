@@ -283,7 +283,7 @@ uuid = "a63ad114-7e13-5084-954f-fe012c677804"
 
 [[MocosSim]]
 deps = ["CodecZlib", "DataFrames", "DataStructures", "Distributions", "FixedPointNumbers", "LinearAlgebra", "Random", "SaferIntegers", "Setfield", "SortingAlgorithms", "StaticArrays"]
-git-tree-sha1 = "ce5652425e946cde270b2c9aa55ed57eea35c52e"
+git-tree-sha1 = "4006df359d547c8d45fad1e15e16fe7bae0d0391"
 repo-rev = "mbodych/saxony_classes"
 repo-url = "https://github.com/MOCOS-COVID19/MocosSim"
 uuid = "af72bc66-7bc2-4ee8-90df-e21de508fcd7"
