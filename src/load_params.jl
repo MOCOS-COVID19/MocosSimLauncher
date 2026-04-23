@@ -15,10 +15,14 @@ function create_modulation(modulation_dict)
   MocosSim.make_infection_modulation( modulation_name; modulation_params...)
 end
 
+const _JLD2_LOAD_LOCK = ReentrantLock()
+
 function read_params(config, rng::AbstractRNG)
   population_path = config["population_path"] # <= JSON
   population_path::AbstractString # checks if it was indeed a string
-  individuals_df = load(population_path)["individuals_df"]
+  individuals_df = lock(_JLD2_LOAD_LOCK) do
+    load(population_path)["individuals_df"]
+  end
 
   effectiveness_table = Float64[0.0 0.0 0.0 0.0]
 
@@ -48,7 +52,10 @@ function read_params(config, rng::AbstractRNG)
   age_coupling_data_path = get(config["transmission_probabilities"], "age_coupling_data_path", nothing)
   @assert isnothing(age_coupling_kernel_param) == isnothing(age_coupling_data_path)
   age_coupling_thresholds, age_coupling_weights, age_coupling_use_genders =
-    isnothing(age_coupling_data_path) ? (nothing, nothing, false) : load(age_coupling_data_path, "age_thresholds", "contact_mat", "uses_genders")
+    isnothing(age_coupling_data_path) ? (nothing, nothing, false) :
+      lock(_JLD2_LOAD_LOCK) do
+        load(age_coupling_data_path, "age_thresholds", "contact_mat", "uses_genders")
+      end
 
   screening_params = if !haskey(config, "screening")
       nothing

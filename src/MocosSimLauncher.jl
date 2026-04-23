@@ -24,8 +24,9 @@ include("cmd_parsing.jl")
 include("callback.jl")
 include("load_params.jl")
 include("outputs.jl")
+include("scoring.jl")
 
-export launch
+export launch, evaluate_config_window
 
 function string2enum(enum_group::Type{<:Enum{T}}, str::AbstractString) where {T<:Integer}
     sym = Symbol(str)
@@ -38,6 +39,27 @@ function string2enum(enum_group::Type{<:Enum{T}}, str::AbstractString) where {T<
 end
 
 dict2kwargs(dict::Dict{S, Any} where S<:AbstractString) = NamedTuple{Tuple(Symbol.(keys(dict)))}(values(dict))
+
+checkpoint_path_for(base::AbstractString, trajectory_id::Integer) = trajectory_id == 1 ? base : string(base, "_", trajectory_id, ".jld2")
+
+function load_resume_state(path::AbstractString)
+  isfile(path) || return nothing
+  lock(_JLD2_LOAD_LOCK) do
+    f = jldopen(path, "r")
+    try
+      state = read(f, "state")
+      callback = read(f, "callback")
+      trajectory_id = haskey(f, "trajectory_id") ? Int(read(f, "trajectory_id")) : 0
+      checkpoint_time = haskey(f, "checkpoint_time") ? MocosSim.TimePoint(read(f, "checkpoint_time")) : MocosSim.TimePoint(0)
+      window_start = haskey(f, "window_start") ? MocosSim.TimePoint(read(f, "window_start")) : checkpoint_time
+      return state, callback, trajectory_id, checkpoint_time, window_start
+    finally
+      close(f)
+    end
+  end
+end
+
+const _LAUNCH_SETUP_LOCK = ReentrantLock()
 
 function launch(args::AbstractVector{T} where T<:AbstractString)
   @info "Stated" nthreads()
@@ -54,6 +76,17 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
   time_limit = get(config, "stop_simulation_time", typemax(MocosSim.TimePoint)) |> MocosSim.TimePoint
   num_trajectories = config["num_trajectories"] |> Int
   params_seed = get(config, "params_seed", 0)
+  checkpoint_time = haskey(config, "checkpoint_time") ? config["checkpoint_time"] |> MocosSim.TimePoint : missing
+  checkpoint_output = get(cmd_args, "output-checkpoint", nothing)
+  resume_checkpoint = get(cmd_args, "resume-from-checkpoint", nothing)
+  window_start = get(config, "window_start", 0) |> MocosSim.TimePoint
+
+  # Serialise all file I/O so concurrent launch() calls don't race on JLD2/HDF5.
+  # Lock covers the setup phase only; released before the @threads simulation loop.
+  local params, num_individuals, immunization, immune, immune_ages, immune_events,
+        enqueue_immunizations, states, callbacks, contexts, outputs,
+        writelock, writelock2, progress, outside_case_imports
+  lock(_LAUNCH_SETUP_LOCK) do
 
   @info "loading population and setting up parameters" params_seed
   rng = MersenneTwister(params_seed)
@@ -105,6 +138,7 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
   @info "allocating simulation states"
   states = [MocosSim.SimState(num_individuals) for _ in 1:nthreads()]
   callbacks = [DetectionCallback(num_individuals, max_num_infected, time_limit) for _ in 1:nthreads()]
+  contexts = [TrajectoryContext() for _ in 1:nthreads()]
   outputs = make_outputs(cmd_args, num_trajectories)
 
   for o in outputs
@@ -133,41 +167,78 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
     error("the import function was not used!")
   end
 
+  end  # lock(_LAUNCH_SETUP_LOCK) — setup complete, simulation runs concurrently from here
+
   @threads for trajectory_id in 1:num_trajectories
     state = states[threadid()]
-    MocosSim.reset!(state, trajectory_id)
+    callback = callbacks[threadid()]
+    context = contexts[threadid()]
+    reset!(context)
+    context.trajectory_id = trajectory_id
+    context.window_start = window_start
 
-    for outside_fun in outside_case_imports
-      outside_fun(state, params)
-    end
-    if params.screening_params !== nothing
-      MocosSim.add_screening!(state, params)
-    end
+    if isnothing(resume_checkpoint)
+      MocosSim.reset!(state, trajectory_id)
+      reset!(callback)
+      if checkpoint_output !== nothing
+        context.checkpoint_path = checkpoint_path_for(checkpoint_output, trajectory_id)
+        context.checkpoint_time = checkpoint_time
+      end
+
+      for outside_fun in outside_case_imports
+        outside_fun(state, params)
+      end
+      if params.screening_params !== nothing
+        MocosSim.add_screening!(state, params)
+      end
 
 
-    if immune !== nothing
-      immune::AbstractVector{Bool}
-      for i in 1:num_individuals
-        if !immune[i]
-          continue
+      if immune !== nothing
+        immune::AbstractVector{Bool}
+        for i in 1:num_individuals
+          if !immune[i]
+            continue
+          end
+          individual = state.individuals[i]
+          state.individuals[i] = @set individual.health = MocosSim.Recovered
         end
-        individual = state.individuals[i]
-        state.individuals[i] = @set individual.health = MocosSim.Recovered
+      end
+      if immune_events !== nothing
+        MocosSim.immunize!(state, immune_events)
+      end
+    else
+      resume_result = load_resume_state(resume_checkpoint)
+      if resume_result === nothing
+        # checkpoint file missing — run fresh from scratch
+        MocosSim.reset!(state, trajectory_id)
+        reset!(callback)
+      else
+        resumed_state, resumed_callback, _, resumed_time, resumed_window_start = resume_result
+        states[threadid()] = resumed_state
+        callbacks[threadid()] = resumed_callback
+        state = resumed_state
+        callback = resumed_callback
+        context.window_start = resumed_window_start
+        if !ismissing(checkpoint_time) && resumed_time >= checkpoint_time
+          context.checkpoint_written = true
+        end
+      end
+      if checkpoint_output !== nothing
+        context.checkpoint_path = checkpoint_path_for(checkpoint_output, trajectory_id)
+        context.checkpoint_time = checkpoint_time
       end
     end
-    if immune_events !== nothing
-      MocosSim.immunize!(state, immune_events)
-    end
 
-    callback = callbacks[threadid()]
-    reset!(callback)
     try
-      MocosSim.simulate!(state, params, callback)
+      local callback_wrapper = (event, simstate, simparams) -> callback(event, simstate, simparams, context)
+      MocosSim.simulate!(state, params, callback_wrapper)
       for o in outputs
         pushtrajectory!(o, trajectory_id, writelock, state, params, callback)
       end
-      path = "test.jld2"
-      save_infections_and_detections(path, writelock2, state, callback)
+      if cmd_args["output-run-dump-prefix"] !== nothing
+        path = cmd_args["output-run-dump-prefix"] * "_t$(trajectory_id).jld2"
+        save_infections_and_detections(path, writelock2, state, callback)
+      end
     catch err
       @warn "Failed on thread " threadid() trajectory_id err
       foreach(x -> println(stderr, x), stacktrace(catch_backtrace()))

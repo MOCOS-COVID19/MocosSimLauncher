@@ -28,6 +28,24 @@ DetectionCallback(sz::Integer, max_num_infected::Integer=10^8, time_limit::Mocos
     time_limit
 )
 
+mutable struct TrajectoryContext
+  trajectory_id::Int
+  checkpoint_path::Union{Nothing,String}
+  checkpoint_time::OptTimePoint
+  checkpoint_written::Bool
+  window_start::MocosSim.TimePoint
+end
+
+TrajectoryContext() = TrajectoryContext(0, nothing, missing, false, MocosSim.TimePoint(0))
+
+function reset!(context::TrajectoryContext)
+  context.trajectory_id = 0
+  context.checkpoint_path = nothing
+  context.checkpoint_time = missing
+  context.checkpoint_written = false
+  context.window_start = MocosSim.TimePoint(0)
+end
+
 function reset!(cb::DetectionCallback)
   fill!(cb.detection_times, missing)
   fill!(cb.detection_types, 0)
@@ -38,7 +56,29 @@ function reset!(cb::DetectionCallback)
   fill!(cb.transmission_types, 0)
 end
 
-function (cb::DetectionCallback)(event::MocosSim.Event, state::MocosSim.SimState, params::MocosSim.SimParams)
+function save_checkpoint(path::AbstractString, state::MocosSim.SimState, callback::DetectionCallback, context::TrajectoryContext)
+  jldopen(path, "w"; compress=true) do f
+    f["state"] = state
+    f["callback"] = callback
+    f["trajectory_id"] = context.trajectory_id
+    f["checkpoint_time"] = Float64(MocosSim.time(state))
+    f["window_start"] = Float64(context.window_start)
+  end
+  nothing
+end
+
+function maybe_write_checkpoint!(cb::DetectionCallback, state::MocosSim.SimState, context::TrajectoryContext)
+  if context.checkpoint_written || isnothing(context.checkpoint_path) || ismissing(context.checkpoint_time)
+    return
+  end
+  if MocosSim.time(state) >= context.checkpoint_time
+    save_checkpoint(context.checkpoint_path, state, cb, context)
+    context.checkpoint_written = true
+  end
+  nothing
+end
+
+function (cb::DetectionCallback)(event::MocosSim.Event, state::MocosSim.SimState, params::MocosSim.SimParams, context::TrajectoryContext=TrajectoryContext())
   eventkind = MocosSim.kind(event)
   contactkind = MocosSim.contactkind(event)
   subject = MocosSim.subject(event)
@@ -54,6 +94,7 @@ function (cb::DetectionCallback)(event::MocosSim.Event, state::MocosSim.SimState
     cb.transmission_sources[subject] = MocosSim.source(event)
     cb.transmission_types[subject] = MocosSim.contactkind(event) |> UInt8
   end
+  maybe_write_checkpoint!(cb, state, context)
   return MocosSim.numinfected(state.stats) < cb.max_num_infected && MocosSim.time(event) < cb.time_limit
 end
 
@@ -72,7 +113,7 @@ end
 
 function save_infections_and_detections(path::AbstractString, writelock::Base.AbstractLock, simstate::MocosSim.SimState, callback::DetectionCallback)
   try lock(writelock)
-    f = jldopen(path, "w", compress=true)
+    f = jldopen(path, "w"; iotype=IOStream, compress=true)
     try
       # MocosSim.saveparams(f, simstate)
       saveparams(f, callback)

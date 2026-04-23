@@ -39,7 +39,7 @@ function pushtrajectory!(d::DailyTrajectories, trajectory_id::Integer, writelock
   nothing
 end
 
-aftertrajectories(d::DailyTrajectories) = close(d.file)
+aftertrajectories(d::DailyTrajectories, ::MocosSim.SimParams) = close(d.file)
 
 function save_daily_trajectories(dict, state::MocosSim.SimState, params::MocosSim.SimParams, cb::DetectionCallback)
   max_days = MocosSim.time(state) |> floor |> Int

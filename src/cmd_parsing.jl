@@ -20,6 +20,12 @@ function parse_commandline(args::AbstractVector{T} where T<:AbstractString)
     "--output-summary"
       help = "path where summary should be saved"
       arg_type = String
+    "--output-checkpoint"
+      help = "path where checkpoint state for the trajectory should be saved"
+      arg_type = String
+    "--resume-from-checkpoint"
+      help = "path to a saved checkpoint state to resume from"
+      arg_type = String
 	end
   parse_args(args, s)
 end
