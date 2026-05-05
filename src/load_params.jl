@@ -88,10 +88,10 @@ function read_params(config, rng::AbstractRNG)
   omicron_strain_multiplier = get(config["transmission_probabilities"], "omicron_strain_multiplier", 5.1) |> float
   @info omicron_strain_multiplier
   hospital_kernel_param = get(config["transmission_probabilities"], "hospital", 0.0) |> float
-  healthcare_detection_prob, healthcare_detection_delay =  if !haskey(config, "healthare_detections")
+  healthcare_detection_prob, healthcare_detection_delay =  if !haskey(config, "healthcare_detections")
     0.8, 1.0
   else
-    float(config["healthare_detections"]["probability"]), float(config["healthare_detections"]["delay"])
+    float(config["healthcare_detections"]["probability"]), float(config["healthcare_detections"]["delay"])
   end
 
   MocosSim.make_params(
