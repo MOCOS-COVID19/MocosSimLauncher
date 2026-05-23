@@ -50,12 +50,17 @@ function save_daily_trajectories(dict, state::MocosSim.SimState, params::MocosSi
   infection_times = Vector{OptTimePoint}(missing, num_individuals)
   contact_kinds = Vector{MocosSim.ContactKind}(undef, num_individuals)
   non_asymptomatic = Vector{OptTimePoint}(missing, num_individuals)
+  attending_schools = Vector{OptTimePoint}(missing, num_individuals)
+  strain_instances = [strain for strain in instances(MocosSim.StrainKind) if strain !== MocosSim.NullStrain]
+  num_strains = length(strain_instances)
+  strain_index = Dict{MocosSim.StrainKind,Int}(strain => idx for (idx, strain) in enumerate(strain_instances))
+  strain_per_individual = zeros(Int, num_individuals)
   # infections_immunity_kind = zeros(Int, 6, max_days + 1)
   infections_ages = zeros(Int, num_agegroup, max_days + 1)
-  # infections_strain_kind = zeros(Int, MocosSim.NUM_STRAINS, max_days + 1)
+  infections_strain_kind = zeros(Int, num_strains, max_days + 1)
   # detections_immunity_kind = zeros(Int, 6, max_days + 1)
   detections_ages = zeros(Int, num_agegroup, max_days + 1)
-  # detections_strain_kind = zeros(Int, MocosSim.NUM_STRAINS, max_days + 1)
+  detections_strain_kind = zeros(Int, num_strains, max_days + 1)
   # death_immunity_kind = zeros(Int, 6, max_days + 1)
   # hospitalization_immunity_kind = zeros(Int, 6, max_days + 1)
   # hospitalization_release_immunity_kind = zeros(Int, 6, max_days + 1)
@@ -67,9 +72,11 @@ function save_daily_trajectories(dict, state::MocosSim.SimState, params::MocosSi
     kind = contactkind(event)
     contact_kinds[i] = kind
     infection_times[i] = ifelse(kind == MocosSim.NoContact, missing, time(event))
+    attending_schools[i] = ifelse(params.attending_schools[i], 1.0, missing)
     severity = state.progressions[i].severity
     non_asymptomatic[i] = ifelse(severity == MocosSim.Asymptomatic, missing, 1.0)
-    attending_school[i] = ifelse(params.attending_schools[i], 1.0, missing)
+    strain_kind = MocosSim.strainkind(event)
+    strain_per_individual[i] = get(strain_index, strain_kind, 0)
   end
   hospitalization_progressions = getproperty.(state.progressions, :severe_symptoms_time)
   recovery_progressions = getproperty.(state.progressions, :recovery_time)
@@ -82,9 +89,20 @@ function save_daily_trajectories(dict, state::MocosSim.SimState, params::MocosSi
       if infection_times[i] !== missing && infection_times[i] <= max_days
         time_int = infection_times[i] + 1 |> floor |> Int
         infections_ages[group_ids,time_int] += 1
-        if cb.detection_times[i] !== missing && cb.detection_times[i] <=max_days
+        strain_idx = strain_per_individual[i]
+        if strain_idx > 0
+          infections_strain_kind[strain_idx, time_int] += 1
+        end
+        if cb.detection_times[i] !== missing && cb.detection_times[i] <= max_days
           time_int = cb.detection_times[i] + 1 |> floor |> Int
           detections_ages[group_ids,time_int] += 1
+        if cb.detection_times[i] !== missing && cb.detection_times[i] <= max_days
+          time_int = cb.detection_times[i] + 1 |> floor |> Int
+          detections_ages[group_ids,time_int] += 1
+          if strain_idx > 0
+            detections_strain_kind[strain_idx, time_int] += 1
+          end
+        end
         end
       end
       if death_progressions[i] !== missing && infection_times[i] + death_progressions[i] <= max_days
@@ -106,7 +124,7 @@ function save_daily_trajectories(dict, state::MocosSim.SimState, params::MocosSi
   dict["daily_deaths"] = daily(filter(!ismissing, infection_times.+death_progressions), max_days)
   dict["daily_hospitalizations"] = daily(filter(!ismissing, (infection_times.+hospitalization_progressions) .* non_asymptomatic), max_days)
   dict["daily_hospital_releases"] = daily(filter(!ismissing, (infection_times.+hospital_release_progressions) .* non_asymptomatic), max_days)
-  dict["daily_student_detections"] = daily(filter(!ismissing, cb.detection_times .* attending_school), max_days)
+  dict["daily_student_detections"] = daily(filter(!ismissing, cb.detection_times .* attending_schools), max_days)
   for kind in instances(MocosSim.ContactKind)
     if kind != NoContact
       dict["daily_" * lowercase(string(kind))] = daily(infection_times[contact_kinds.==kind], max_days)
