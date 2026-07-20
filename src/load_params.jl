@@ -15,6 +15,47 @@ function create_modulation(modulation_dict)
   MocosSim.make_infection_modulation( modulation_name; modulation_params...)
 end
 
+function apply_seasonality_to_intervals!(modulation_dict, seasonality_dict)
+  seasonality_dict === nothing && return modulation_dict
+
+  target = get(seasonality_dict, "target", "infection_modulation")
+  # we call this only when target matches, but keep a safe guard
+  target != "infection_modulation" && return modulation_dict
+
+  params = get(modulation_dict, "params", Dict{String,Any}())
+  function_name = modulation_dict["function"]
+  function_name != "IntervalsModulations" && return modulation_dict
+
+  interval_times = params["interval_times"] |> Vector
+  interval_values = params["interval_values"] |> Vector{Float64}
+
+  factor = float(get(seasonality_dict, "factor", 1.0))
+  start_day0 = get(seasonality_dict, "start_day_offset", nothing)
+  end_day0   = get(seasonality_dict, "end_day_offset", nothing)
+  years = get(seasonality_dict, "years", [0])
+  (start_day0 === nothing || end_day0 === nothing) && return modulation_dict
+
+  # Bucket k is active if its time slot overlaps [win_start, win_end).
+  # interval_times are bucket boundaries (exclusive), with implicit boundary at 0.
+  boundaries = vcat([0], interval_times, [typemax(Int)])
+
+  for yr in years
+    win_start = Int(start_day0) + Int(365 * yr)
+    win_end   = Int(end_day0)   + Int(365 * yr)
+    for k in 1:length(interval_values)
+      slot_start = boundaries[k]
+      slot_end   = boundaries[k+1]
+      if slot_start < win_end && slot_end > win_start
+        interval_values[k] *= factor
+      end
+    end
+  end
+
+  params["interval_values"] = interval_values
+  modulation_dict["params"] = params
+  modulation_dict
+end
+
 const _JLD2_LOAD_LOCK = ReentrantLock()
 
 function read_params(config, rng::AbstractRNG)
@@ -34,6 +75,23 @@ function read_params(config, rng::AbstractRNG)
   infection_modulation = get(config, "infection_modulation", nothing) |> create_modulation
   mild_detection_modulation = get(config, "mild_detection_modulation", nothing) |> create_modulation
   tracing_modulation = get(config, "tracing_modulation", nothing) |> create_modulation
+
+  # Optional: seasonality modifiers applied to temporal IntervalsModulations.
+  # Expected config shape (example):
+  # seasonality = {
+  #   "target" => "infection_modulation",
+  #   "factor" => 0.8,
+  #   "start_day_offset" => 241,   # May 1 relative to sim day-0
+  #   "end_day_offset" => 364,     # Aug 31+1 relative to sim day-0 (end exclusive)
+  #   "years" => [0, 1]            # apply to 2021 and +365 (2022)
+  # }
+  seasonality = get(config, "seasonality", nothing)
+  if !isnothing(seasonality) && !isnothing(get(config, "infection_modulation", nothing))
+    # modify config dict before create_modulation
+    infection_modulation_dict = deepcopy(get(config, "infection_modulation"))
+    infection_modulation_dict = apply_seasonality_to_intervals!(infection_modulation_dict, seasonality)
+    infection_modulation = create_modulation(infection_modulation_dict)
+  end
 
   constant_kernel_param = config["transmission_probabilities"]["constant"]  |> float
   household_kernel_param = config["transmission_probabilities"]["household"] |> float
