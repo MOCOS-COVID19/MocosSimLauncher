@@ -45,8 +45,13 @@ function apply_seasonality_to_intervals!(modulation_dict, seasonality_dict)
     for k in 1:length(interval_values)
       slot_start = boundaries[k]
       slot_end   = boundaries[k+1]
-      if slot_start < win_end && slot_end > win_start
-        interval_values[k] *= factor
+      overlap_start = max(slot_start, win_start)
+      overlap_end   = min(slot_end, win_end)
+      overlap = overlap_end - overlap_start
+      if overlap > 0
+        slot_len = slot_end - slot_start
+        frac = overlap / slot_len # 0..1
+        interval_values[k] *= 1 - (1 - factor) * frac
       end
     end
   end
