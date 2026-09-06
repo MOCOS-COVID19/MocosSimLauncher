@@ -35,9 +35,15 @@ function apply_seasonality_to_intervals!(modulation_dict, seasonality_dict)
   years = get(seasonality_dict, "years", [0])
   (start_day0 === nothing || end_day0 === nothing) && return modulation_dict
 
+  length(interval_values) == length(interval_times) || throw(ArgumentError(
+    "seasonality requires one interval value per finite interval time; " *
+    "an open-ended interval cannot be weighted safely"
+  ))
+  issorted(interval_times) || throw(ArgumentError("interval_times must be sorted"))
+
   # Bucket k is active if its time slot overlaps [win_start, win_end).
-  # interval_times are bucket boundaries (exclusive), with implicit boundary at 0.
-  boundaries = vcat([0], interval_times, [typemax(Int)])
+  # Intervals have an implicit boundary at zero and a finite exclusive end.
+  boundaries = vcat([0], interval_times)
 
   for yr in years
     win_start = Int(start_day0) + Int(365 * yr)

@@ -7,9 +7,9 @@ struct Summary <: Output
   Summary(filename::AbstractString, num_trajectories::Integer) = new(
     filename,
     fill(NaN32, num_trajectories),
-    Vector{UInt32}(undef, num_trajectories),
-    Vector{UInt32}(undef, num_trajectories),
-    Vector{UInt32}(undef, num_trajectories))
+    zeros(UInt32, num_trajectories),
+    zeros(UInt32, num_trajectories),
+    zeros(UInt32, num_trajectories))
 end
 
 time_or_nan(e) = MocosSim.istransmission(e) ? Float32(MocosSim.time(e)) : NaN32
