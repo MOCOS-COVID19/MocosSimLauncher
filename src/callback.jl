@@ -49,6 +49,7 @@ end
 function reset!(cb::DetectionCallback)
   fill!(cb.detection_times, missing)
   fill!(cb.detection_types, 0)
+  fill!(cb.tracing_times, missing)
   fill!(cb.tracing_sources, 0)
   fill!(cb.tracing_types, 0)
   fill!(cb.transmission_times, missing)

@@ -124,7 +124,8 @@ function save_daily_trajectories(dict, state::MocosSim.SimState, params::MocosSi
       hospitalization_releases_ages[group_ids,time_int] += 1
     end
   end
-  dict["daily_infections"] = daily(filter(!ismissing, infection_times .* non_asymptomatic), max_days)
+  dict["daily_infections"] = daily(skipmissing(infection_times), max_days)
+  dict["daily_symptomatic_infections"] = daily(filter(!ismissing, infection_times .* non_asymptomatic), max_days)
   dict["daily_detections"] = daily(filter(!ismissing, cb.detection_times .* non_asymptomatic), max_days)
   dict["daily_deaths"] = daily(filter(!ismissing, infection_times.+death_progressions), max_days)
   dict["daily_hospitalizations"] = daily(filter(!ismissing, (infection_times.+hospitalization_progressions) .* non_asymptomatic), max_days)
