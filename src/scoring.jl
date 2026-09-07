@@ -37,6 +37,10 @@ function aggregate_metric(path::AbstractString, metric::AbstractString)
       if isempty(agg)
         resize!(agg, length(rolled))
         fill!(agg, 0.0)
+      elseif length(rolled) > length(agg)
+        old_length = length(agg)
+        resize!(agg, length(rolled))
+        fill!(@view(agg[old_length + 1:end]), 0.0)
       end
       limit = min(length(agg), length(rolled))
       @inbounds for idx in 1:limit

@@ -40,10 +40,15 @@ end
 
 dict2kwargs(dict::Dict{S, Any} where S<:AbstractString) = NamedTuple{Tuple(Symbol.(keys(dict)))}(values(dict))
 
-checkpoint_path_for(base::AbstractString, trajectory_id::Integer) = trajectory_id == 1 ? base : string(base, "_", trajectory_id, ".jld2")
+function checkpoint_path_for(base::AbstractString, trajectory_id::Integer)
+  trajectory_id == 1 && return base
+  root, ext = splitext(base)
+  isempty(ext) && (ext = ".jld2")
+  string(root, "_", trajectory_id, ext)
+end
 
 function load_resume_state(path::AbstractString)
-  isfile(path) || return nothing
+  isfile(path) || throw(ArgumentError("checkpoint file does not exist: $(path)"))
   lock(_JLD2_LOAD_LOCK) do
     f = jldopen(path, "r")
     try
@@ -80,11 +85,15 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
   checkpoint_output = get(cmd_args, "output-checkpoint", nothing)
   resume_checkpoint = get(cmd_args, "resume-from-checkpoint", nothing)
   window_start = get(config, "window_start", 0) |> MocosSim.TimePoint
+  if resume_checkpoint !== nothing
+    num_trajectories == 1 || throw(ArgumentError("resuming from one checkpoint requires num_trajectories = 1"))
+    isfile(resume_checkpoint) || throw(ArgumentError("checkpoint file does not exist: $(resume_checkpoint)"))
+  end
 
   # Serialise all file I/O so concurrent launch() calls don't race on JLD2/HDF5.
   # Lock covers the setup phase only; released before the @threads simulation loop.
-  local params, num_individuals, immunization, immune, immune_ages, immune_events,
-        enqueue_immunizations, states, callbacks, contexts, outputs,
+  local params, num_individuals, immune, immune_events,
+        states, callbacks, contexts, outputs,
         writelock, writelock2, progress, outside_case_imports
   lock(_LAUNCH_SETUP_LOCK) do
 
@@ -95,31 +104,15 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
   GC.gc()
   num_individuals =  MocosSim.numindividuals(params)
 
-  immunization = nothing
   immune = nothing
-  immune_ages = nothing
   immune_events = nothing
   if haskey(config, "initial_conditions")
     initial_conditions = config["initial_conditions"]
     if haskey(initial_conditions, "immunization")
       immunization_cfg = initial_conditions["immunization"]
 
-      if haskey(immunization_cfg, "age_groups")
-        immunization_thresholds = get(immunization_cfg["age_groups"], "immunization_thresholds", [0, 12, 18, 60]) |> Vector{Int32}
-        immunization_levels = get(immunization_cfg["age_groups"], "immunization_levels", [0.0, 0.39, 0.64, 0.80]) |> Vector{Float32}
-        immunization_booster = get(immunization_cfg["age_groups"], "immunization_booster", [0.0, 0.0385, 0.288, 0.13]) |> Vector{Float32}
-        immunization_tables = hcat(immunization_levels,immunization_booster) |> Matrix{Float32}
-        immunization_previously_infected = get(immunization_cfg["age_groups"], "immunization_previously_infected", [0.24, 0.24, 0.24, 0.24]) |> Vector{Float32}
-        immune_ages = [immunization_thresholds, immunization_tables, immunization_previously_infected]
-      end
-
       if haskey(immunization_cfg, "immunity_events")
         immune_events = load(immunization_cfg["immunity_events"], "events")::MocosSim.ImmunizationEvents
-      end
-
-      if haskey(immunization_cfg, "order_file")
-        immunization = load(immunization_cfg["order_file"], "immunization")::MocosSim.Immunization
-        enqueue_immunizations = get(immunization_cfg, "enqueue", true) |> Bool
       end
 
       # keeping legacy immunization for a while
@@ -169,6 +162,8 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
 
   end  # lock(_LAUNCH_SETUP_LOCK) — setup complete, simulation runs concurrently from here
 
+  trajectory_errors = Tuple{Int,Any,Any}[]
+  error_lock = ReentrantLock()
   @threads for trajectory_id in 1:num_trajectories
     state = states[threadid()]
     callback = callbacks[threadid()]
@@ -207,21 +202,14 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
         MocosSim.immunize!(state, immune_events)
       end
     else
-      resume_result = load_resume_state(resume_checkpoint)
-      if resume_result === nothing
-        # checkpoint file missing — run fresh from scratch
-        MocosSim.reset!(state, trajectory_id)
-        reset!(callback)
-      else
-        resumed_state, resumed_callback, _, resumed_time, resumed_window_start = resume_result
-        states[threadid()] = resumed_state
-        callbacks[threadid()] = resumed_callback
-        state = resumed_state
-        callback = resumed_callback
-        context.window_start = resumed_window_start
-        if !ismissing(checkpoint_time) && resumed_time >= checkpoint_time
-          context.checkpoint_written = true
-        end
+      resumed_state, resumed_callback, _, resumed_time, resumed_window_start = load_resume_state(resume_checkpoint)
+      states[threadid()] = resumed_state
+      callbacks[threadid()] = resumed_callback
+      state = resumed_state
+      callback = resumed_callback
+      context.window_start = resumed_window_start
+      if !ismissing(checkpoint_time) && resumed_time >= checkpoint_time
+        context.checkpoint_written = true
       end
       if checkpoint_output !== nothing
         context.checkpoint_path = checkpoint_path_for(checkpoint_output, trajectory_id)
@@ -240,14 +228,21 @@ function launch(args::AbstractVector{T} where T<:AbstractString)
         save_infections_and_detections(path, writelock2, state, callback)
       end
     catch err
-      @warn "Failed on thread " threadid() trajectory_id err
-      foreach(x -> println(stderr, x), stacktrace(catch_backtrace()))
+      bt = catch_backtrace()
+      lock(error_lock) do
+        push!(trajectory_errors, (trajectory_id, err, bt))
+      end
+      @error "Trajectory failed" thread_id=threadid() trajectory_id exception=(err, bt)
     end
     ProgressMeter.next!(progress) # is thread-safe
   end
 
   for o in outputs
     aftertrajectories(o, params)
+  end
+  if !isempty(trajectory_errors)
+    failed_ids = sort!(first.(trajectory_errors))
+    error("$(length(trajectory_errors)) trajectory/trajectories failed: $(join(failed_ids, ", "))")
   end
 end
 
@@ -266,4 +261,3 @@ precompile(launch, (Vector{String},))
 precompile(julia_main, ())
 
 end
-
